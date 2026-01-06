@@ -1,0 +1,74 @@
+{% extends 'bakeryapp/base.html' %}
+
+{% block title %}À Propos - La Boulangerie{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    
+    <!-- Notre Histoire -->
+    <div class="row align-items-center mb-5">
+        <div class="col-md-6">
+            <h1 class="display-4 mb-4">Notre Histoire</h1>
+            <p class="lead">Nous sommes trois passionnées, Asmae Laasli, Chaimae Benlayachi et Fatimzahra El Abid, et nous venons de créer notre boulangerie artisanale à Rabat.</p>
+            <p>Notre rêve commun est simple : partager la passion du pain et de la pâtisserie avec des ingrédients de qualité et un savoir-faire soigné.</p>
+            <p>Chaque jour, nous explorons de nouvelles recettes tout en respectant les méthodes artisanales qui donnent à notre pain et nos pâtisseries leur saveur unique.</p>
+        </div>
+        <div class="col-md-6">
+            <img src="https://images.unsplash.com/photo-1587241321921-91a834d6d191?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                 class="img-fluid rounded shadow-lg" alt="Notre histoire à la boulangerie" loading="lazy">
+        </div>
+    </div>
+    
+    <!-- Nos Valeurs -->
+    <div class="row mb-5">
+        <div class="col-12 text-center mb-4">
+            <h2 class="display-5 mb-5">Nos Valeurs</h2>
+        </div>
+
+        <div class="col-md-3 text-center mb-4">
+            <div class="p-4 border rounded shadow-sm h-100">
+                <i class="fas fa-seedling fa-3x mb-3" style="color: #d4a017;"></i>
+                <h4>Produits Locaux</h4>
+                <p>Nous travaillons avec des producteurs locaux pour des ingrédients frais et de saison.</p>
+            </div>
+        </div>
+        <div class="col-md-3 text-center mb-4">
+            <div class="p-4 border rounded shadow-sm h-100">
+                <i class="fas fa-leaf fa-3x mb-3" style="color: #d4a017;"></i>
+                <h4>100% Naturel</h4>
+                <p>Pas de conservateurs ni d'additifs. Juste des ingrédients simples et naturels.</p>
+            </div>
+        </div>
+        <div class="col-md-3 text-center mb-4">
+            <div class="p-4 border rounded shadow-sm h-100">
+                <i class="fas fa-hand-holding-heart fa-3x mb-3" style="color: #d4a017;"></i>
+                <h4>Fait Maison</h4>
+                <p>Tout est préparé sur place chaque jour, du levain à la dernière cuisson.</p>
+            </div>
+        </div>
+        <div class="col-md-3 text-center mb-4">
+            <div class="p-4 border rounded shadow-sm h-100">
+                <i class="fas fa-recycle fa-3x mb-3" style="color: #d4a017;"></i>
+                <h4>Éco-responsable</h4>
+                <p>Emballages biodégradables et lutte contre le gaspillage alimentaire.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notre Équipe -->
+    <div class="row">
+        <div class="col-12 text-center mb-4">
+            <h2 class="display-5 mb-5">Notre Équipe</h2>
+        </div>
+
+        {% for member in team_members %}
+        <div class="col-md-4 text-center mb-4">
+            <img src="{{ member.img }}" class="rounded-circle mb-3 img-thumbnail" width="150" height="150" alt="{{ member.name }}" loading="lazy">
+            <h4 class="mt-3">{{ member.name }}</h4>
+            <p class="text-muted fw-bold">{{ member.role }}</p>
+            <p class="fst-italic">"{{ member.quote }}"</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

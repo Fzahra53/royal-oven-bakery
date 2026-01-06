@@ -1,0 +1,179 @@
+{% extends "bakeryapp/base.html" %}
+
+{% load static %}
+
+{% block title %}Royal Oven • Rabat{% endblock %}
+
+{% block content %}
+
+<!-- HERO (remplace ton premier screenshot) -->
+<section class="hero-section">
+  <div class="container">
+    <div class="row align-items-center gy-4">
+      <div class="col-lg-7">
+        <span class="badge-maroc mb-3 d-inline-block">Pain frais • Chaque matin • Rabat</span>
+
+        <h1 class="display-4 fw-bold mb-3" style="color: var(--bordeaux);">
+          Bienvenue chez <span style="color: var(--doré);">Royal Oven</span>
+        </h1>
+
+        <p class="lead mb-4" style="max-width: 620px;">
+          Pains artisanaux, viennoiseries dorées et gourmandises du jour.
+          Commandez en quelques clics ou passez en boutique.
+        </p>
+
+        <div class="d-flex flex-wrap gap-2">
+          <a href="{% url 'produits' %}" class="btn btn-primary">
+            <i class="fas fa-store me-2"></i> Voir nos produits
+          </a>
+          <a href="#localisation" class="btn btn-outline-primary">
+            <i class="fas fa-map-marker-alt me-2"></i> Nous trouver
+          </a>
+        </div>
+
+        <div class="mt-4 d-flex flex-wrap gap-3" style="color:#555;">
+          <div><i class="fas fa-seedling me-2" style="color:var(--doré);"></i>Ingrédients sélectionnés</div>
+          <div><i class="fas fa-fire me-2" style="color:var(--doré);"></i>Four chaud tous les jours</div>
+          <div><i class="fas fa-smile me-2" style="color:var(--doré);"></i>Service rapide</div>
+        </div>
+      </div>
+
+      <div class="col-lg-5">
+        <!-- image à la place du bloc blanc -->
+           <div class="hero-image-box"></div>
+
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SPECIALITES (remplace ton 2e screenshot "Modules de gestion complets") -->
+<section class="container my-5">
+  <div class="text-center mb-4">
+    <h2 class="fw-bold" style="color:var(--bordeaux);">Nos spécialités</h2>
+    <p class="text-muted mb-0">Du bon, du frais, du fait-maison.</p>
+  </div>
+
+  <div class="row g-4">
+  {% for c in categories %}
+  <div class="col-md-3">
+    <div class="product-card p-4 text-center h-100">
+      <i class="fas fa-bread-slice fa-2x mb-3" style="color:var(--doré);"></i>
+      <h5 class="fw-bold mb-2">{{ c.nom }}</h5>
+      <p class="text-muted mb-0">{{ c.description }}</p>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+
+    
+      
+</section>
+
+
+<!-- BEST SELLERS (section produits simples, sans "logiciel") -->
+<section class="container my-5">
+  <div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-3">
+    <div>
+      <h2 class="fw-bold mb-1" style="color:var(--bordeaux);">Les plus demandés</h2>
+      <p class="text-muted mb-0">Un aperçu rapide de nos incontournables.</p>
+    </div>
+    <a href="{% url 'produits' %}" class="btn btn-outline-primary">
+      <i class="fas fa-store me-2"></i> Tout voir
+    </a>
+  </div>
+
+  <div class="row g-4">
+    <!-- Tu peux remplacer les images par tes images static -->
+    <div class="col-md-3">
+      <div class="product-card">
+        <img class="product-img" src="https://images.unsplash.com/photo-1608198093002-ad4e005484ec?auto=format&fit=crop&w=1200&q=80" alt="Baguette">
+        <div class="p-3">
+          <h6 class="fw-bold mb-1">Baguette tradition</h6>
+          <div class="text-muted small mb-2">Croustillante • Dorée</div>
+          <div class="price">4</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="product-card">
+        <img class="product-img" src="https://images.unsplash.com/photo-1549931319-a545dcf3bc73?auto=format&fit=crop&w=1200&q=80" alt="Croissant">
+        <div class="p-3">
+          <h6 class="fw-bold mb-1">Croissant beurre</h6>
+          <div class="text-muted small mb-2">Feuilleté • Gourmand</div>
+          <div class="price">5</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="product-card">
+        <img class="product-img" src="https://images.unsplash.com/photo-1517433670267-08bbd4be890f?auto=format&fit=crop&w=1200&q=80" alt="Pain complet">
+        <div class="p-3">
+          <h6 class="fw-bold mb-1">Pain complet</h6>
+          <div class="text-muted small mb-2">Sain • Riche en fibres</div>
+          <div class="price">8</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="product-card">
+        <img class="product-img" src="https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=1200&q=80" alt="Tarte">
+        <div class="p-3">
+          <h6 class="fw-bold mb-1">Tarte du jour</h6>
+          <div class="text-muted small mb-2">Selon disponibilité</div>
+          <div class="price">18</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+
+
+<!-- LOCALISATION + CTA -->
+<section id="localisation" class="container my-5">
+  <div class="row g-4 align-items-stretch">
+    <div class="col-lg-6">
+      <div class="product-card p-4 h-100">
+        <h3 class="fw-bold mb-2" style="color:var(--bordeaux);">Nous trouver</h3>
+        <p class="text-muted">Passez nous voir — le pain chaud vous attend 🙂</p>
+
+        <p class="mb-2"><i class="fas fa-map-marker-alt me-2" style="color:var(--doré);"></i>Agdal, Rabat • Maroc</p>
+        <p class="mb-2"><i class="fas fa-phone me-2" style="color:var(--doré);"></i>+212 6 12 34 56 78</p>
+        <p class="mb-4"><i class="fas fa-clock me-2" style="color:var(--doré);"></i>Lun–Ven 7h–20h • Sam 7h–21h • Dim 8h–14h</p>
+
+        <div class="d-flex flex-wrap gap-2">
+          <a href="{% url 'produits' %}" class="btn btn-primary">
+            <i class="fas fa-store me-2"></i> Voir les produits
+          </a>
+          <a href="{% url 'contact' %}" class="btn btn-outline-primary">
+            <i class="fas fa-envelope me-2"></i> Nous contacter
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="product-card overflow-hidden h-100">
+        <iframe
+          title="Carte Royal Oven"
+          src="https://www.google.com/maps?q=Agdal%20Rabat&output=embed"
+          width="100%" height="100%"
+          style="border:0; min-height: 360px;"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

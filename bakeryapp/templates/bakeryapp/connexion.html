@@ -1,0 +1,173 @@
+{% extends 'bakeryapp/base.html' %}
+
+{% block title %}Connexion • Royal Oven {% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-white border-0 py-4">
+                    <div class="text-center">
+                        <div class="logo-container d-flex align-items-center justify-content-center mb-3">
+                            <div class="logo-icon position-relative me-3">
+                                <div class="logo-circle"></div>
+                                <i class="fas fa-user-circle logo-baguette"></i>
+                            </div>
+                            <div class="logo-text">
+                                <div class="logo-main">Connexion</div>
+                                <div class="logo-sub">CLIENT</div>
+                            </div>
+                        </div>
+                        <p class="text-muted mb-0">Accédez à votre espace client pour commander</p>
+                    </div>
+                </div>
+                
+                <div class="card-body p-4 p-md-5">
+                    <form method="POST" action="{% url 'connexion' %}">
+                        {% csrf_token %}
+                        
+                        <!-- Messages d'erreur/succès -->
+                        {% if messages %}
+                        <div class="mb-4">
+                            {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Email -->
+                        <div class="mb-4">
+                            <label for="email" class="form-label text-bordeaux">
+                                <i class="fas fa-envelope me-2"></i>Adresse email
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-rose border-rose">
+                                    <i class="fas fa-at text-bordeaux"></i>
+                                </span>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       placeholder="votre@email.com" required>
+                            </div>
+                        </div>
+                        
+                        <!-- Mot de passe -->
+                        <div class="mb-4">
+                            <label for="password" class="form-label text-bordeaux">
+                                <i class="fas fa-lock me-2"></i>Mot de passe
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-rose border-rose">
+                                    <i class="fas fa-key text-bordeaux"></i>
+                                </span>
+                                <input type="password" class="form-control" id="password" name="password" 
+                                       placeholder="••••••••" required>
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">
+                                <a href="#">Mot de passe oublié ?</a>
+                                    <i class="fas fa-key me-1"></i>Mot de passe oublié ?
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <!-- Se souvenir de moi -->
+                        <div class="mb-4 form-check">
+                            <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                            <label class="form-check-label" for="remember">
+                                Se souvenir de moi
+                            </label>
+                        </div>
+                        
+                        <!-- Bouton de connexion -->
+                        <div class="d-grid mb-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>Se connecter
+                            </button>
+                        </div>
+                        
+                        <!-- Séparateur -->
+                        <div class="text-center mb-4">
+                            <hr class="my-4">
+                            <span class="px-3 text-muted bg-white">Ou</span>
+                        </div>
+                        
+                        <!-- Inscription -->
+                        <div class="text-center">
+                            <p class="mb-3">Vous n'avez pas encore de compte ?</p>
+                            <a href="{% url 'inscription' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-user-plus me-2"></i>Créer un compte
+                            </a>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="card-footer bg-light border-0 py-4 text-center">
+                    <p class="mb-2">
+                        <i class="fas fa-shield-alt me-2 text-success"></i>
+                        Connexion sécurisée SSL
+                    </p>
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Vos données sont protégées conformément au RGPD
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Styles spécifiques à la connexion */
+    .card {
+        border-radius: 20px;
+        overflow: hidden;
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, var(--rose) 0%, rgba(245, 230, 232, 0.8) 100%);
+    }
+    
+    .input-group-text {
+        background-color: var(--rose) !important;
+        border-color: var(--rose) !important;
+    }
+    
+    #togglePassword {
+        border-color: #dee2e6;
+        color: var(--bordeaux);
+    }
+    
+    #togglePassword:hover {
+        background-color: var(--rose);
+        border-color: var(--bordeaux);
+    }
+</style>
+
+<script>
+    // Afficher/masquer le mot de passe
+    document.getElementById('togglePassword').addEventListener('click', function() {
+        const passwordInput = document.getElementById('password');
+        const icon = this.querySelector('i');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    });
+    
+    // Auto-focus sur le champ email
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('email').focus();
+    });
+</script>
+{% endblock %}

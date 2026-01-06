@@ -1,0 +1,161 @@
+{% extends 'bakeryapp/base.html' %}
+
+{% block title %}Contact - La Boulangerie{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Informations de contact -->
+        <div class="col-md-6 mb-5">
+            <h1 class="mb-4">Contactez-nous</h1>
+            <p class="lead mb-4">Nous sommes à votre écoute pour toute question ou demande.</p>
+            
+            <div class="contact-info mb-4">
+                <h4><i class="fas fa-map-marker-alt me-2" style="color: #d4a017;"></i> Notre adresse</h4>
+                <p class="ms-4">Agdal, Rabat<br>Maroc</p>
+                
+                <h4><i class="fas fa-phone me-2" style="color: #d4a017;"></i> Téléphone</h4>
+                <p class="ms-4">+212 6 12 34 56 78</p>
+                
+                <h4><i class="fas fa-envelope me-2" style="color: #d4a017;"></i> Email</h4>
+                <p class="ms-4">contact_royal_oven@gmail.com</p>
+                
+                <h4><i class="fas fa-clock me-2" style="color: #d4a017;"></i> Horaires d'ouverture</h4>
+                <p class="ms-4">
+                   Lundi - Vendredi: 7h - 20h<br>
+                   Samedi: 7h - 21h<br>
+                   Dimanche: 8h - 14h
+                </p>
+            </div>
+            
+            <!-- Carte Google Maps (intégration simple) -->
+            <!-- Carte Google Maps -->
+<div class="mt-4">
+    <h4 class="mb-3">Nous trouver</h4>
+
+    <div style="height: 300px; border-radius: 8px; overflow: hidden;">
+        <iframe
+            src="https://www.google.com/maps?q=Agdal+Rabat+Maroc&output=embed"
+            width="100%"
+            height="100%"
+            style="border:0;"
+            allowfullscreen=""
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+    </div>
+
+    <p class="text-muted mt-2">
+        <small>
+            <i class="fas fa-map-marker-alt me-1"></i>
+            Quartier Agdal – Rabat, Maroc
+        </small>
+    </p>
+</div>
+
+        
+        <!-- Formulaire de contact -->
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-body p-4">
+                    <h3 class="card-title mb-4">Envoyez-nous un message</h3>
+                    
+                    <form>
+                        <div class="mb-3">
+                            <label for="nom" class="form-label">Nom complet *</label>
+                            <input type="text" class="form-control" id="nom" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Adresse email *</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="telephone" class="form-label">Téléphone</label>
+                            <input type="tel" class="form-control" id="telephone">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="sujet" class="form-label">Sujet *</label>
+                            <select class="form-select" id="sujet" required>
+                                <option value="" selected disabled>Choisissez un sujet</option>
+                                <option value="commande">Commande spéciale</option>
+                                <option value="allergie">Question allergène</option>
+                                <option value="avis">Donner mon avis</option>
+                                <option value="travail">Candidature spontanée</option>
+                                <option value="autre">Autre demande</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Message *</label>
+                            <textarea class="form-control" id="message" rows="5" required></textarea>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="newsletter">
+                            <label class="form-check-label" for="newsletter">
+                                Je souhaite m'abonner à la newsletter
+                            </label>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i> Envoyer le message
+                            </button>
+                        </div>
+                        
+                        <p class="text-muted mt-3">
+                            <small>* Champs obligatoires. Nous vous répondrons dans les 48h.</small>
+                        </p>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- FAQ -->
+            <div class="mt-5">
+                <h4 class="mb-3">Questions fréquentes</h4>
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                Puis-je commander pour un événement ?
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Oui ! Nous préparons des buffets et plateaux pour vos événements. Contactez-nous au moins 72h à l'avance.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                Proposez-vous des produits sans gluten ?
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Oui, nous avons une sélection de produits sans gluten. Attention : notre atelier manipule des produits contenant du gluten.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                Acceptez-vous les cartes bancaires ?
+                            </button>
+                        </h2>
+                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Oui, nous acceptons les cartes bancaires, espèces, chèques et Apple/Google Pay.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

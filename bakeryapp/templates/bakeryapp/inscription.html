@@ -1,0 +1,214 @@
+{% extends 'bakeryapp/base.html' %}
+
+{% block title %}Inscription • Royal Oven{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-white border-0 py-4">
+                    <div class="text-center">
+                        <div class="logo-container d-flex align-items-center justify-content-center mb-3">
+                            <div class="logo-icon position-relative me-3">
+                                <div class="logo-circle"></div>
+                                <i class="fas fa-user-plus logo-baguette"></i>
+                            </div>
+                            <div class="logo-text">
+                                <div class="logo-main">Inscription</div>
+                                <div class="logo-sub">NOUVEAU CLIENT</div>
+                            </div>
+                        </div>
+                        <p class="text-muted mb-0">Créez votre compte pour commander en ligne</p>
+                    </div>
+                </div>
+                
+                <div class="card-body p-4 p-md-5">
+                    {% if messages %}
+  <div class="mb-4">
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+                    <form method="POST" action="{% url 'inscription' %}">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <!-- Informations personnelles -->
+                            <div class="col-md-6 mb-4">
+                                <h5 class="text-bordeaux mb-4">
+                                    <i class="fas fa-user me-2"></i>Informations personnelles
+                                </h5>
+                                
+                                <!-- Prénom -->
+                                <div class="mb-3">
+                                    <label class="form-label">Prénom *</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-rose">
+                                            <i class="fas fa-user text-bordeaux"></i>
+                                        </span>
+                                        <input type="text" class="form-control" name="prenom" required>
+                                    </div>
+                                </div>
+                                
+                                <!-- Nom -->
+                                <div class="mb-3">
+                                    <label class="form-label">Nom *</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-rose">
+                                            <i class="fas fa-user-tag text-bordeaux"></i>
+                                        </span>
+                                        <input type="text" class="form-control" name="nom" required>
+                                    </div>
+                                </div>
+                                
+                                <!-- Téléphone -->
+                                <div class="mb-3">
+                                    <label class="form-label">Téléphone *</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-rose">+212</span>
+                                        <input type="tel" class="form-control" name="telephone" 
+                                               placeholder="6 12 34 56 78" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Informations de connexion -->
+                            <div class="col-md-6 mb-4">
+                                <h5 class="text-bordeaux mb-4">
+                                    <i class="fas fa-lock me-2"></i>Informations de connexion
+                                </h5>
+                                
+                                <!-- Email -->
+                                <div class="mb-3">
+                                    <label class="form-label">Email *</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-rose">
+                                            <i class="fas fa-at text-bordeaux"></i>
+                                        </span>
+                                        <input type="email" class="form-control" name="email" required>
+                                    </div>
+                                </div>
+                                
+                                <!-- Mot de passe -->
+                                <div class="mb-3">
+                                    <label class="form-label">Mot de passe *</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-rose">
+                                            <i class="fas fa-key text-bordeaux"></i>
+                                        </span>
+                                        <input type="password" class="form-control" name="password" 
+                                               id="password" required>
+                                    </div>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Minimum 8 caractères avec chiffres et lettres
+                                    </div>
+                                </div>
+                                
+                                <!-- Confirmation mot de passe -->
+                                <div class="mb-4">
+                                    <label class="form-label">Confirmer le mot de passe *</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-rose">
+                                            <i class="fas fa-key text-bordeaux"></i>
+                                        </span>
+                                        <input type="password" class="form-control" name="password_confirm" 
+                                               id="password_confirm" required>
+                                    </div>
+                                    <div class="form-text text-danger" id="password_error"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Adresse de livraison -->
+                        <div class="mb-4">
+                            <h5 class="text-bordeaux mb-4">
+                                <i class="fas fa-map-marker-alt me-2"></i>Adresse de livraison
+                            </h5>
+                            
+                            <div class="row">
+                                <div class="col-md-8 mb-3">
+                                    <label class="form-label">Adresse *</label>
+                                    <input type="text" class="form-control" name="adresse" 
+                                           placeholder="N° rue, avenue, quartier" required>
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Ville *</label>
+                                    <select class="form-select" name="ville" required>
+                                        <option value="">Choisir...</option>
+                                        <option value="Rabat">Rabat</option>
+                                        <option value="Casablanca">Casablanca</option>
+                                        <option value="Salé">Salé</option>
+                                        <option value="Témara">Témara</option>
+                                        <option value="Skhirat">Skhirat</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Conditions générales -->
+                        <div class="mb-4">
+                            <div class="form-check">
+                               <input class="form-check-input" type="checkbox" id="conditions" name="conditions" required>
+                                <label class="form-check-label" for="conditions">
+                                    J'accepte les 
+                                    <a href="#" class="text-bordeaux text-decoration-none">conditions générales</a> 
+                                    et la 
+                                    <a href="#" class="text-bordeaux text-decoration-none">politique de confidentialité</a>
+                                </label>
+                            </div>
+                            
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="newsletter" name="newsletter" checked>
+                                <label class="form-check-label" for="newsletter">
+                                    Je souhaite recevoir les offres promotionnelles et nouveautés
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Bouton d'inscription -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-user-check me-2"></i>Créer mon compte
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="card-footer bg-light border-0 py-4 text-center">
+                    <p class="mb-0">
+                        Vous avez déjà un compte ? 
+                        <a href="{% url 'connexion' %}" class="text-bordeaux fw-bold text-decoration-none">
+                            Connectez-vous ici
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Vérification des mots de passe
+    document.getElementById('password_confirm').addEventListener('input', function() {
+        const password = document.getElementById('password').value;
+        const confirm = this.value;
+        const errorDiv = document.getElementById('password_error');
+        
+        if (password !== confirm) {
+            errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>Les mots de passe ne correspondent pas';
+            this.classList.add('is-invalid');
+        } else {
+            errorDiv.innerHTML = '<i class="fas fa-check-circle me-1"></i>Les mots de passe correspondent';
+            this.classList.remove('is-invalid');
+        }
+    });
+</script>
+{% endblock %}

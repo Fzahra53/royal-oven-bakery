@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Royal Oven • Rabat{% endblock %}</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bordeaux: #8B2635;
+            --beige: #F8F4E9;
+            --rose: #F5E6E8;
+            --doré: #D4AF37;
+            --texte: #333333;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--beige);
+            color: var(--texte);
+            line-height: 1.6;
+        }
+
+        /* NAVBAR MUST BE CLICKABLE */
+        .navbar {
+            background-color: white;
+            box-shadow: 0 2px 20px rgba(139, 38, 53, 0.1);
+            padding: 15px 0;
+            position: relative;
+            z-index: 9999; /* important */
+        }
+
+        .nav-link {
+            color: var(--texte) !important;
+            font-weight: 500;
+            margin: 0 8px;
+            padding: 8px 16px !important;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background-color: var(--rose);
+            color: var(--bordeaux) !important;
+        }
+
+        /* LOGO PROFESSIONNEL */
+        .logo-container { font-family: 'Poppins', sans-serif; }
+
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-circle {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--beige) 0%, #fff 100%);
+            border-radius: 50%;
+            position: absolute;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: 2px solid var(--rose);
+        }
+
+        .logo-baguette {
+            font-size: 1.8rem;
+            color: var(--doré);
+            z-index: 3;
+            position: relative;
+            transform: rotate(-15deg);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .logo-star {
+            position: absolute;
+            font-size: 0.8rem;
+            color: var(--bordeaux);
+            top: 5px;
+            right: 5px;
+            z-index: 4;
+        }
+
+        .logo-text { display: flex; flex-direction: column; line-height: 1.1; }
+
+        .logo-main {
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--bordeaux);
+            letter-spacing: 0.5px;
+        }
+
+        .logo-sub {
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: var(--doré);
+            letter-spacing: 1px;
+        }
+
+        /* HERO SECTION */
+        .hero-section {
+    background: linear-gradient(135deg, var(--rose) 0%, rgba(245, 230, 232, 0.95) 100%);
+    padding: 100px 0;
+    border-radius: 0 0 40px 40px;
+}
+
+
+        /* CARTES PRODUITS */
+        .product-card {
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background: white;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            height: 100%;
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(139, 38, 53, 0.15);
+        }
+
+        .product-img {
+            height: 220px;
+            object-fit: cover;
+            width: 100%;
+        }
+
+        /* PRIX EN DH */
+        .price {
+            color: var(--bordeaux);
+            font-weight: 700;
+            font-size: 1.4rem;
+        }
+
+        .price::after {
+            content: " DH";
+            font-size: 0.9rem;
+            color: #666;
+            margin-left: 2px;
+        }
+
+        /* BOUTONS */
+        .btn-primary {
+            background-color: var(--bordeaux);
+            border-color: var(--bordeaux);
+            padding: 10px 28px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #600018;
+            border-color: #600018;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(139, 38, 53, 0.2);
+        }
+
+        .btn-outline-primary {
+            color: var(--bordeaux);
+            border-color: var(--bordeaux);
+            border-radius: 25px;
+            font-weight: 500;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--bordeaux);
+            color: white;
+        }
+
+        /* FOOTER */
+        footer {
+            background: linear-gradient(135deg, var(--texte) 0%, #222 100%);
+            color: white;
+            margin-top: 100px;
+            padding: 60px 0 30px;
+        }
+
+        .footer-title {
+            color: var(--doré);
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .badge-maroc {
+            background-color: var(--bordeaux);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .copyright {
+            border-top: 1px solid #444;
+            padding-top: 25px;
+            margin-top: 40px;
+            text-align: center;
+            color: #aaa;
+        }
+
+       .hero-image-box{
+  width: 100%;
+  aspect-ratio: 1 / 1;        /* 🔑 rend le bloc parfaitement carré */
+  max-width: 420px;           /* optionnel : limite la taille */
+  margin-left: auto;          /* aligne bien à droite */
+
+  border-radius: 22px;
+  overflow: hidden;
+
+  background-image: url("/static/images/bakery-hero.jpg");
+  background-size: contain;   /* ✅ image entière, jamais coupée */
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #ffffff;
+
+  box-shadow: 0 18px 40px rgba(0,0,0,0.18);
+}
+
+
+
+
+.hero-image-box:hover{
+  transform: none;
+}
+
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+        <div class="container">
+
+            <a class="navbar-brand" href="{% url 'accueil' %}">
+                <div class="logo-container d-flex align-items-center">
+                    <div class="logo-icon position-relative me-3">
+                        <div class="logo-circle"></div>
+                        <i class="fas fa-bread-slice logo-baguette"></i>
+                        <i class="fas fa-star logo-star"></i>
+                    </div>
+                    <div class="logo-text">
+                        <div class="logo-main">Royal</div>
+                        <div class="logo-sub">Oven</div>
+                    </div>
+                </div>
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav ms-auto">
+
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'accueil' %}active{% endif %}"
+                           href="{% url 'accueil' %}">
+                            <i class="fas fa-home me-1"></i> Accueil
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'produits' %}active{% endif %}"
+                           href="{% url 'produits' %}">
+                            <i class="fas fa-store me-1"></i> Produits
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'apropos' %}active{% endif %}"
+                           href="{% url 'apropos' %}">
+                            <i class="fas fa-info-circle me-1"></i> À Propos
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'contact' %}active{% endif %}"
+                           href="{% url 'contact' %}">
+                            <i class="fas fa-phone me-1"></i> Contact
+                        </a>
+                    </li>
+
+                    {% if not user.is_authenticated %}
+                        <li class="nav-item">
+  <a class="nav-link {% if request.resolver_match.url_name == 'connexion' %}active{% endif %}"
+     href="{% url 'connexion' %}">
+    <i class="fas fa-sign-in-alt me-1"></i> Connexion
+  </a>
+</li>
+
+                        <li class="nav-item">
+                            <a class="btn btn-primary btn-sm ms-2" href="{% url 'inscription' %}">
+                                <i class="fas fa-user-plus me-1"></i> S'inscrire
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user-circle me-1"></i>
+                                {{ user.first_name|default:user.username }}
+                            </a>
+
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'mon_compte' %}">
+                                        <i class="fas fa-tachometer-alt me-2"></i>Mon compte
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'mon_panier' %}">
+                                        <i class="fas fa-shopping-cart me-2"></i>Mon panier
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="#">
+                                        <i class="fas fa-heart me-2"></i>Mes favoris
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="{% url 'deconnexion' %}">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        {% if user.is_staff %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'admin:index' %}">
+                                    <i class="fas fa-user-cog me-1"></i> Administration
+                                </a>
+                            </li>
+                        {% endif %}
+                    {% endif %}
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenu principal -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-5">
+                    <h5 class="footer-title">
+                        <i class="fas fa-star-and-crescent me-2"></i>Royal Oven
+                    </h5>
+                    <p class="mb-3" style="color: #ccc; line-height: 1.7;">
+                        Savoir-faire traditionnel et ingrédients 100% marocains.
+                        Nous sélectionnons nos farines, nos fruits et nos épices
+                        auprès des meilleurs producteurs du Royaume.
+                    </p>
+                    <span class="badge-maroc">🇲🇦 Solution 100% Marocaine</span>
+                </div>
+
+                <div class="col-lg-4 mb-5">
+                    <h5 class="footer-title">Coordonnées</h5>
+                    <p style="color:#ccc;">
+                        <i class="fas fa-map-marker-alt me-2"></i>Agdal, Rabat • Maroc<br>
+                        <i class="fas fa-phone me-2"></i>+212 6 12 34 56 78<br>
+                        <i class="fas fa-envelope me-2"></i>contact_royal_oven@gmail.com
+                    </p>
+                </div>
+
+                <div class="col-lg-4 mb-5">
+                    <h5 class="footer-title">Horaires</h5>
+                    <p style="color:#ccc;">
+                        Lundi - Vendredi: 7h - 20h<br>
+                        Samedi: 7h - 21h<br>
+                        Dimanche: 8h - 14h
+                    </p>
+                </div>
+            </div>
+
+            <div class="copyright">
+                <p class="mb-2">© 2025 Royal Oven • Rabat. Tous droits réservés.</p>
+                <p style="font-size: 0.9rem; color: #888;">
+                    <i class="fas fa-heart" style="color: var(--rose);"></i>
+                    L'élégance de la main qui pétrit, l'amour de la main qui donne
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,47 @@
+<div class="row g-4">
+    {% for produit in produits %}
+    <div class="col-lg-3 col-md-4 col-sm-6">
+        <div class="product-card">
+            <div class="position-relative">
+                <img src="{{ produit.image.url|default:'https://via.placeholder.com/500' }}"
+                     class="product-img"
+                     alt="{{ produit.nom_produit }}">
+            </div>
+
+            <div class="p-4">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="mb-0">{{ produit.nom_produit }}</h5>
+                    <span class="badge bg-rose text-bordeaux">
+                        {{ produit.categorie|default:"Produit" }}
+                    </span>
+                </div>
+
+                <p class="text-muted small mb-3">
+                    {{ produit.description|default:"Produit frais du jour" }}
+                </p>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="price">{{ produit.prix_unitaire }}</span>
+                        <small class="text-muted"> DH</small>
+                    </div>
+
+                    <div class="btn-group">
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'panier_ajouter' produit.id %}"
+                               class="btn btn-sm btn-primary">
+                                <i class="fas fa-cart-plus"></i>
+                            </a>
+                        {% else %}
+                            <a href="{% url 'connexion' %}"
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-sign-in-alt"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
