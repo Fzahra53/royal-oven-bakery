@@ -1,0 +1,89 @@
+{% extends "bakeryapp/base.html" %}
+{% block title %}Commande #{{ commande.id }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-0">Commande #{{ commande.id }}</h2>
+      <div class="text-muted">Client : {{ commande.client.nom }}</div>
+      <div class="text-muted">Statut : {{ commande.get_statut_display }}</div>
+    </div>
+
+    <a href="{% url 'backoffice_assign_livreur' commande.id %}" class="btn btn-primary">
+      Affecter / changer livreur
+    </a>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="card p-4">
+        <h5 class="mb-3">Produits</h5>
+
+        {% if lignes %}
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>Produit</th>
+                <th>Qté</th>
+                <th>PU</th>
+                <th>Sous-total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for li in lignes %}
+              <tr>
+                <td>{{ li.produit.nom }}</td>
+                <td>{{ li.quantite }}</td>
+                <td>{{ li.prix_unitaire }} DH</td>
+                <td>{{ li.sous_total }} DH</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+          <div class="text-end fw-bold">
+            Total : {{ commande.montant_total }} DH
+          </div>
+        {% else %}
+          <div class="alert alert-info mb-0">Aucune ligne pour cette commande.</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="card p-4">
+        <h5 class="mb-3">Livraison</h5>
+
+        {% if livraison %}
+          <div><strong>Livreur :</strong> {% if livraison.livreur %}{{ livraison.livreur.nom }}{% else %}-{% endif %}</div>
+          <div><strong>Statut :</strong> {{ livraison.get_statut_display }}</div>
+          <div><strong>Date :</strong> {{ livraison.date_livraison|default:"-" }}</div>
+
+          {% if livraison.statut == "EN_LIVRAISON" %}
+  <form method="post" action="{% url 'delivery_update_status' livraison.id %}" class="mt-3">
+    {% csrf_token %}
+    <input type="hidden" name="statut" value="LIVREE">
+    <button type="submit" class="btn btn-success">
+      ✅ Marquer comme livrée
+    </button>
+  </form>
+{% endif %}
+
+        {% else %}
+          <div class="alert alert-warning mb-0">
+            Pas encore de livraison créée.
+            <div class="mt-2">
+              <a href="{% url 'backoffice_assign_livreur' commande.id %}" class="btn btn-sm btn-primary">
+                Affecter un livreur
+              </a>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

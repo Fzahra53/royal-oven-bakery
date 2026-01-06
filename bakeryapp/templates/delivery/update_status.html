@@ -1,0 +1,32 @@
+{% extends "bakeryapp/base.html" %}
+{% block title %}Mettre à jour livraison{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <h2 class="mb-4">Mettre à jour le statut</h2>
+
+  <div class="card p-4 mb-4">
+    <div><strong>Livraison #{{ livraison.id }}</strong></div>
+    <div class="text-muted">Commande #{{ livraison.commande.id }}</div>
+    <div class="text-muted">Client: {{ livraison.commande.client.nom }}</div>
+    <div class="text-muted">Statut actuel: {{ livraison.get_statut_display }}</div>
+  </div>
+
+  <form method="post" class="card p-4">
+    {% csrf_token %}
+
+    <label class="form-label">Nouveau statut</label>
+    <select name="statut" class="form-select" required>
+      <option value="EN_PREPARATION" {% if livraison.statut == "EN_PREPARATION" %}selected{% endif %}>En préparation</option>
+      <option value="EN_LIVRAISON" {% if livraison.statut == "EN_LIVRAISON" %}selected{% endif %}>En livraison</option>
+      <option value="LIVREE" {% if livraison.statut == "LIVREE" %}selected{% endif %}>Livrée</option>
+      <option value="ANNULEE" {% if livraison.statut == "ANNULEE" %}selected{% endif %}>Annulée</option>
+    </select>
+
+    <div class="mt-4 d-flex gap-2">
+      <button type="submit" class="btn btn-primary">Enregistrer</button>
+      <a href="{% url 'delivery_my_orders' %}" class="btn btn-outline-secondary">Retour</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

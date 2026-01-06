@@ -11,34 +11,21 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
-import environ
-
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-env = environ.Env(DEBUG=(bool, False))
-environ.Env.read_env(BASE_DIR / ".env")
-
-
-
-
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-
-
-DEBUG = env("DEBUG")
-SECRET_KEY = env("SECRET_KEY")
+SECRET_KEY = 'django-insecure-4jpvvm4$d^ei%*g&e!1g&a&$o9vo$74@)1rm+cx%02jy66y-6y'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
 
-
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
-
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -60,7 +47,6 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'bakeryapp.middleware.AdminSessionTimeoutMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -88,18 +74,16 @@ WSGI_APPLICATION = 'bakery.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": env("DB_NAME"),
-        "USER": env("DB_USER"),
-        "PASSWORD": env("DB_PASSWORD"),
-        "HOST": env("DB_HOST"),
-        "PORT": env("DB_PORT"),
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'bakery_db',
+        'USER': 'root',
+        'PASSWORD': 'NewStrongPassword123!',
+        'HOST': 'localhost',
+        'PORT': '3306',
     }
 }
-
 
 
 
@@ -137,9 +121,17 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
-STATICFILES_DIRS = [
-    BASE_DIR / "bakeryapp" / "static",
-]
+STATIC_URL = '/static/'
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-SESSION_SAVE_EVERY_REQUEST = True
+
+
+
+LOGIN_URL = "/connexion/"
+LOGIN_REDIRECT_URL = "/mon-compte/"
+LOGOUT_REDIRECT_URL = "/"
+
+# Media files (uploaded images)
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+

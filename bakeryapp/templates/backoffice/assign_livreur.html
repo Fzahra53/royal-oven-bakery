@@ -1,0 +1,31 @@
+{% extends "bakeryapp/base.html" %}
+{% block title %}Affecter livreur{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <h2 class="mb-3">Affecter un livreur</h2>
+
+  <div class="mb-4">
+    <div><strong>Commande #{{ commande.id }}</strong></div>
+    <div class="text-muted">Client: {{ commande.client.nom }}</div>
+    <div class="text-muted">Statut: {{ commande.get_statut_display }}</div>
+  </div>
+
+  <form method="post" class="card p-4">
+    {% csrf_token %}
+
+    <label class="form-label">Livreur</label>
+    <select name="livreur_id" class="form-select" required>
+      <option value="" selected disabled>— Choisir un livreur —</option>
+      {% for l in livreurs %}
+        <option value="{{ l.id }}">{{ l.nom }} ({{ l.telephone }})</option>
+      {% endfor %}
+    </select>
+
+    <div class="mt-4 d-flex gap-2">
+      <button type="submit" class="btn btn-primary">Affecter</button>
+      <a href="{% url 'backoffice_order_detail' commande.id %}" class="btn btn-outline-secondary">Annuler</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

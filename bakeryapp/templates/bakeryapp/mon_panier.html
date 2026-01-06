@@ -99,9 +99,10 @@
 
                         <hr>
 
-                        <button class="btn btn-primary w-100" disabled>
-                            <i class="fas fa-credit-card me-2"></i>Passer à la commande (à venir)
-                        </button>
+                        <a href="{% url 'valider_commande' %}" class="btn btn-primary w-100">
+    <i class="fas fa-credit-card me-2"></i>Passer à la commande
+</a>
+
 
                         <p class="text-muted small mt-2 mb-0">
                             (On activera ce bouton quand tu feras la page Checkout / Commande)

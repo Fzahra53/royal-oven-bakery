@@ -1,0 +1,30 @@
+{% extends "bakeryapp/base.html" %}
+{% block title %}Nouveau livreur{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <h2>Créer un livreur</h2>
+
+  <form method="post" class="card p-4 mt-4">
+    {% csrf_token %}
+
+    <div class="mb-3">
+      <label class="form-label">Nom</label>
+      <input type="text" name="nom" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Téléphone</label>
+      <input type="text" name="telephone" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Véhicule</label>
+      <input type="text" name="vehicule" class="form-control">
+    </div>
+
+    <button class="btn btn-primary">Créer</button>
+    <a href="{% url 'backoffice_orders_list' %}" class="btn btn-outline-secondary">Annuler</a>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "bakeryapp/base.html" %}
+
+{% block title %}Backoffice — Dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <h2 class="mb-4">Backoffice — Dashboard</h2>
+
+  <div class="row g-4">
+
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Produits</h5>
+          <p class="card-text text-muted">Ajouter / modifier / stock / activer</p>
+          <a href="{% url 'backoffice_products_list' %}" class="btn btn-primary">Gérer les produits</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Commandes</h5>
+          <p class="card-text text-muted">Suivi des commandes et statut</p>
+          <a href="{% url 'backoffice_orders_list' %}" class="btn btn-primary">Voir les commandes</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Livreurs</h5>
+          <p class="card-text text-muted">Affectation des livraisons</p>
+          <a href="#" class="btn btn-outline-primary disabled"><a href="{% url 'backoffice_livreurs_list' %}" class="btn btn-primary">
+  Gérer les livreurs
+</a>
+</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "bakeryapp/base.html" %}
+{% block title %}Backoffice — Livreurs{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Backoffice — Livreurs</h2>
+    <a href="{% url 'backoffice_livreur_create' %}" class="btn btn-primary">+ Nouveau livreur</a>
+  </div>
+
+  {% if livreurs %}
+  <table class="table table-striped align-middle">
+    <thead>
+        
+
+      <tr>
+        <th>Nom</th>
+        <th>Téléphone</th>
+        <th>Véhicule</th>
+        <th>Disponible</th>
+        <th class="text-end">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for l in livreurs %}
+     <tr>
+  <td>{{ l.nom }}</td>
+  <td>{{ l.telephone }}</td>
+  <td>{{ l.vehicule|default:"-" }}</td>
+  <td>{% if l.disponible %}✅{% else %}❌{% endif %}</td>
+
+  <td class="text-end">
+    <a href="{% url 'backoffice_livreur_toggle' l.id %}"
+       class="btn btn-sm btn-outline-primary">
+      {% if l.disponible %}Rendre indispo{% else %}Rendre dispo{% endif %}
+    </a>
+  </td>
+</tr>
+
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <div class="alert alert-info">Aucun livreur pour le moment.</div>
+  {% endif %}
+</div>
+{% endblock %}

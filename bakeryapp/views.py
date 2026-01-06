@@ -1,6 +1,7 @@
 
 
 from django.shortcuts import render
+from .models import Commande, Livreur, Livraison, LigneCommande
 from .models import Produit
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -10,6 +11,15 @@ from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from .models import Client
 from .models import Categorie
+from .forms import ProduitForm
+from django.contrib.auth import get_user_model
+from django.views.decorators.http import require_http_methods
+from django.utils import timezone
+
+
+
+
+
 
 
 
@@ -38,6 +48,268 @@ def accueil(request):
 
 
 
+from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
+
+
+# ---------------- BACKOFFICE (stubs to make URLs work) ----------------
+
+@login_required
+def backoffice_dashboard(request):
+    return render(request, "backoffice/dashboard.html")
+
+
+
+
+@login_required
+def backoffice_products_list(request):
+    produits = Produit.objects.all().order_by("-id")
+    return render(
+        request,
+        "backoffice/products_list.html",
+        {"produits": produits}
+    )
+
+
+
+@login_required
+def backoffice_product_create(request):
+    if request.method == "POST":
+        form = ProduitForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect("backoffice_products_list")
+    else:
+        form = ProduitForm()
+
+    return render(request, "backoffice/product_form.html", {"form": form})
+
+
+@login_required
+def backoffice_product_update(request, pk):
+    produit = get_object_or_404(Produit, pk=pk)
+
+    if request.method == "POST":
+        form = ProduitForm(request.POST, request.FILES, instance=produit)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Produit modifié ✅")
+            return redirect("backoffice_products_list")
+    else:
+        form = ProduitForm(instance=produit)
+
+    return render(request, "backoffice/product_form.html", {"form": form, "produit": produit})
+
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def backoffice_product_delete(request, pk):
+    produit = get_object_or_404(Produit, pk=pk)
+
+    if request.method == "POST":
+        produit.delete()
+        messages.success(request, "Produit supprimé ✅")
+        return redirect("backoffice_products_list")
+
+    return render(request, "backoffice/product_confirm_delete.html", {"produit": produit})
+
+
+
+
+@login_required
+def backoffice_orders_list(request):
+    commandes = Commande.objects.all().order_by("-date_commande")
+    return render(request, "backoffice/orders_list.html", {"commandes": commandes})
+
+
+@login_required
+def backoffice_order_detail(request, pk):
+    commande = get_object_or_404(Commande, pk=pk)
+    livraison = Livraison.objects.filter(commande=commande).first()
+    lignes = commande.lignes.select_related("produit").all()
+
+    return render(
+        request,
+        "backoffice/order_detail.html",
+        {"commande": commande, "livraison": livraison, "lignes": lignes},
+    )
+
+@login_required
+def backoffice_livreurs_list(request):
+    livreurs = Livreur.objects.all().order_by("-id")
+    return render(request, "backoffice/livreurs_list.html", {"livreurs": livreurs})
+
+
+@login_required
+def backoffice_livreur_toggle(request, pk):
+    livreur = get_object_or_404(Livreur, pk=pk)
+    livreur.disponible = not livreur.disponible
+    livreur.save(update_fields=["disponible"])
+    messages.success(request, "Disponibilité mise à jour ✅")
+    return redirect("backoffice_livreurs_list")
+
+
+
+
+
+
+@login_required
+def backoffice_assign_livreur(request, pk):
+    commande = get_object_or_404(Commande, pk=pk)
+    livreurs = Livreur.objects.filter(disponible=True).order_by("nom")
+
+    if request.method == "POST":
+        livreur_id = request.POST.get("livreur_id")  # name=livreur_id dans le form
+        livreur = get_object_or_404(Livreur, pk=livreur_id)
+
+        # Crée ou récupère la livraison liée à la commande
+        livraison, created = Livraison.objects.get_or_create(commande=commande)
+
+        livraison.livreur = livreur
+        livreur.disponible = False
+        livreur.save(update_fields=["disponible"])
+
+        livraison.statut = "EN_LIVRAISON"
+        livraison.date_livraison = timezone.now()
+        livraison.save()
+
+        # Optionnel: mettre aussi le statut commande
+        commande.statut = "EN_LIVRAISON"
+        commande.save(update_fields=["statut"])
+
+        messages.success(request, f"Livreur affecté : {livreur.nom} ✅")
+        return redirect("backoffice_order_detail", pk=commande.id)
+
+    return render(
+        request,
+        "backoffice/assign_livreur.html",
+        {"commande": commande, "livreurs": livreurs},
+    )
+
+
+@login_required
+def delivery_my_orders(request):
+    livreur = Livreur.objects.filter(nom=request.user.username).first()
+
+    # si tu n'as pas encore de login livreur lié, on évite le crash
+    if not livreur:
+        messages.error(request, "Aucun profil livreur associé à ce compte.")
+        return redirect("accueil")
+
+    livraisons = Livraison.objects.filter(livreur=livreur).order_by("-id")
+    return render(request, "delivery/my_orders.html", {"livraisons": livraisons, "livreur": livreur})
+
+
+@login_required
+def delivery_update_status(request, pk):
+    livraison = get_object_or_404(Livraison, pk=pk)
+
+    if request.method == "POST":
+        new_status = request.POST.get("statut")
+
+        livraison.statut = new_status
+        livraison.save(update_fields=["statut"])
+
+        # 👉 SI la livraison est terminée, le livreur redevient disponible
+        if new_status == "LIVREE" and livraison.livreur:
+            livreur = livraison.livreur
+            livreur.disponible = True
+            livreur.save(update_fields=["disponible"])
+
+        messages.success(request, "Statut de livraison mis à jour ✅")
+        return redirect("delivery_my_orders")
+
+    return render(
+        request,
+        "delivery/update_status.html",
+        {"livraison": livraison},
+    )
+
+
+
+
+@login_required
+def valider_commande(request):
+    # récupérer ou créer le profil client
+    client, _ = Client.objects.get_or_create(
+        user=request.user,
+        defaults={
+            "nom": (request.user.get_full_name() or request.user.username),
+            "telephone": "",
+            "email": request.user.email or f"{request.user.username}@local.test",
+            "adresse": "",
+            "ville": "Rabat",
+        },
+    )
+
+    panier = request.session.get("panier", {})
+
+    if not panier:
+        messages.error(request, "Panier vide.")
+        return redirect("produits")
+
+    commande = Commande.objects.create(
+        client=client,
+        statut="EN_ATTENTE",
+        adresse_livraison=client.adresse,
+    )
+
+    total = 0
+
+    for produit_id, qty in panier.items():
+        produit = get_object_or_404(Produit, id=produit_id)
+        prix = produit.prix_actuel()
+
+        LigneCommande.objects.create(
+            commande=commande,
+            produit=produit,
+            quantite=qty,
+            prix_unitaire=prix,
+        )
+
+        total += prix * qty
+        produit.stock -= qty
+        produit.save()
+
+    commande.montant_total = total
+    commande.save()
+
+    # vider le panier
+    request.session["panier"] = {}
+
+    messages.success(request, f"Commande #{commande.id} créée ✅")
+    return redirect("mon_compte")
+
+
+@login_required
+def backoffice_livreur_create(request):
+    if request.method == "POST":
+        nom = request.POST.get("nom", "").strip()
+        telephone = request.POST.get("telephone", "").strip()
+        vehicule = request.POST.get("vehicule", "").strip()
+
+        if not nom or not telephone:
+            messages.error(request, "Nom et téléphone obligatoires.")
+            return redirect("backoffice_livreur_create")
+
+        Livreur.objects.create(
+            nom=nom,
+            telephone=telephone,
+            vehicule=vehicule,
+            disponible=True,
+        )
+
+        messages.success(request, "Livreur créé ✅")
+        return redirect("backoffice_orders_list")
+
+    return render(request, "backoffice/livreur_form.html")
+
+
+
+
+
+
 
 
     
@@ -51,20 +323,35 @@ def accueil(request):
 # Vue pour la connexion
 
 
+
+
 def connexion_view(request):
     if request.method == "POST":
-        email = request.POST.get("email","").strip().lower()
-        password = request.POST.get("password","")
+        identifiant = request.POST.get("email", "").strip()   # ton champ s'appelle "email"
+        password = request.POST.get("password", "")
 
-        user = authenticate(request, username=email, password=password)
+        User = get_user_model()
+
+        # Si l'utilisateur a tapé un email, on récupère son username
+        username_to_auth = identifiant
+        if "@" in identifiant:
+            try:
+                u = User.objects.get(email__iexact=identifiant)
+                username_to_auth = u.username
+            except User.DoesNotExist:
+                username_to_auth = identifiant  # va échouer proprement
+
+        user = authenticate(request, username=username_to_auth, password=password)
+
         if user is None:
-            messages.error(request, "Email ou mot de passe incorrect.")
+            messages.error(request, "Email/username ou mot de passe incorrect.")
             return redirect("connexion")
 
         login(request, user)
         return redirect("mon_compte")
 
     return render(request, "bakeryapp/connexion.html")
+
 
 
 
