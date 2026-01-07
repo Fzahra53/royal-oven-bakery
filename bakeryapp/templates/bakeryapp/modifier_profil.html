@@ -1,0 +1,92 @@
+{% extends 'bakeryapp/base.html' %}
+
+{% block title %}Modifier mon profil • Royal Oven{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-4">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-edit me-2"></i>Modifier mes informations
+                    </h4>
+                </div>
+                
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Prénom</label>
+                                <input type="text" class="form-control" name="prenom" 
+                                       value="{{ user.first_name }}" required>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nom</label>
+                                <input type="text" class="form-control" name="nom" 
+                                       value="{{ user.last_name }}">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Nom complet (affiché)</label>
+                            <input type="text" class="form-control" name="nom_complet" 
+                                   value="{{ client.nom|default:user.get_full_name }}" required>
+                            <small class="text-muted">C'est le nom qui apparaîtra sur vos commandes</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" value="{{ user.email }}" disabled>
+                            <small class="text-muted">Pour changer votre email, contactez le support</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Téléphone</label>
+                            <input type="tel" class="form-control" name="telephone" 
+                                   value="{{ client.telephone|default:'' }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Adresse de livraison</label>
+                            <textarea class="form-control" name="adresse" rows="3" required>{{ client.adresse|default:'' }}</textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Ville</label>
+                                <select class="form-select" name="ville" required>
+                                    <option value="Rabat" {% if client.ville == "Rabat" %}selected{% endif %}>Rabat</option>
+                                    <option value="Casablanca" {% if client.ville == "Casablanca" %}selected{% endif %}>Casablanca</option>
+                                    <option value="Marrakech" {% if client.ville == "Marrakech" %}selected{% endif %}>Marrakech</option>
+                                    <option value="Fès" {% if client.ville == "Fès" %}selected{% endif %}>Fès</option>
+                                    <option value="Tanger" {% if client.ville == "Tanger" %}selected{% endif %}>Tanger</option>
+                                    <option value="Autre" {% if client.ville == "Autre" %}selected{% endif %}>Autre</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label">Date d'inscription</label>
+                                <input type="text" class="form-control" 
+                                       value="{{ client.date_inscription|date:'d/m/Y' }}" disabled>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>Enregistrer les modifications
+                            </button>
+                            <a href="{% url 'mon_compte' %}" class="btn btn-outline-secondary">
+                                Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

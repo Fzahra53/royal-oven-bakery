@@ -1,0 +1,122 @@
+{% extends 'bakeryapp/base.html' %}
+
+{% block title %}Commande #{{ commande.id }} • Royal Oven{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="mb-1">Commande #{{ commande.id }}</h4>
+                            <small class="text-muted">Passée le {{ commande.date_commande|date:"d F Y à H:i" }}</small>
+                        </div>
+                        <div>
+                            {% if commande.statut == "LIVREE" %}
+                            <span class="badge bg-success py-2 px-3">Livrée</span>
+                            {% elif commande.statut == "EN_LIVRAISON" %}
+                            <span class="badge bg-primary py-2 px-3">En livraison</span>
+                            {% elif commande.statut == "EN_PREPARATION" %}
+                            <span class="badge bg-warning py-2 px-3">En préparation</span>
+                            {% elif commande.statut == "EN_ATTENTE" %}
+                            <span class="badge bg-secondary py-2 px-3">En attente</span>
+                            {% elif commande.statut == "ANNULEE" %}
+                            <span class="badge bg-danger py-2 px-3">Annulée</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Informations client -->
+                    <div class="row mb-5">
+                        <div class="col-md-6">
+                            <h6 class="text-uppercase text-muted mb-3">Adresse de livraison</h6>
+                            <p class="mb-1">{{ commande.client.nom }}</p>
+                            <p class="mb-1">{{ commande.adresse_livraison|linebreaks }}</p>
+                            <p class="mb-0">{{ commande.client.ville }}</p>
+                            <p class="mb-0">{{ commande.client.telephone }}</p>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6 class="text-uppercase text-muted mb-3">Informations commande</h6>
+                            <p class="mb-1"><strong>Date :</strong> {{ commande.date_commande|date:"d/m/Y H:i" }}</p>
+                            <p class="mb-1"><strong>Statut :</strong> {{ commande.get_statut_display }}</p>
+                            <p class="mb-1"><strong>Total :</strong> {{ commande.montant_total }} DH</p>
+                            {% if commande.notes %}
+                            <p class="mb-1"><strong>Notes :</strong> {{ commande.notes }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Produits commandés -->
+                    <h6 class="text-uppercase text-muted mb-3">Produits commandés</h6>
+                    <div class="table-responsive mb-4">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Produit</th>
+                                    <th class="text-center">Quantité</th>
+                                    <th class="text-end">Prix unitaire</th>
+                                    <th class="text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ligne in lignes %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if ligne.produit.image %}
+                                            <img src="{{ ligne.produit.image.url }}" 
+                                                 class="rounded me-3" 
+                                                 style="width: 50px; height: 50px; object-fit: cover;">
+                                            {% elif ligne.produit.image_url %}
+                                            <img src="{{ ligne.produit.image_url }}" 
+                                                 class="rounded me-3" 
+                                                 style="width: 50px; height: 50px; object-fit: cover;">
+                                            {% endif %}
+                                            <div>
+                                                <div class="fw-bold">{{ ligne.produit.nom }}</div>
+                                                <small class="text-muted">{{ ligne.produit.get_type_produit_display }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">{{ ligne.quantite }}</td>
+                                    <td class="text-end">{{ ligne.prix_unitaire }} DH</td>
+                                    <td class="text-end fw-bold">{{ ligne.sous_total }} DH</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3" class="text-end fw-bold">Total</td>
+                                    <td class="text-end fw-bold h5">{{ commande.montant_total }} DH</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'mes_commandes' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Retour aux commandes
+                        </a>
+                        
+                        {% if commande.statut == "EN_ATTENTE" %}
+                        <form method="POST" action="{% url 'annuler_commande' commande.id %}" 
+                              onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette commande ?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-times me-2"></i>Annuler la commande
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

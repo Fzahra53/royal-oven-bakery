@@ -1,0 +1,57 @@
+<!-- Menu latéral du compte -->
+<div class="card border-0 shadow-sm sticky-top" style="top: 100px;">
+    <div class="card-body">
+        <div class="text-center mb-4">
+            <div class="avatar-circle mx-auto mb-3">
+                <i class="fas fa-user fa-2x text-bordeaux"></i>
+            </div>
+            <h6 class="mb-1">{{ client.nom|default:user.username }}</h6>
+            <small class="text-muted">{{ user.email }}</small>
+        </div>
+        
+        <div class="list-group list-group-flush">
+            <a href="{% url 'mon_compte' %}" 
+               class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'mon_compte' %}active{% endif %}">
+                <i class="fas fa-tachometer-alt me-2"></i>Tableau de bord
+            </a>
+            <a href="{% url 'mes_commandes' %}" 
+               class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'mes_commandes' %}active{% endif %}">
+                <i class="fas fa-shopping-bag me-2"></i>Mes commandes
+            </a>
+            <a href="{% url 'mes_favoris' %}" 
+               class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'mes_favoris' %}active{% endif %}">
+                <i class="fas fa-heart me-2"></i>Mes favoris
+                {% if request.session.favoris %}
+                <span class="badge bg-danger float-end">{{ request.session.favoris|length }}</span>
+                {% endif %}
+            </a>
+            <a href="{% url 'modifier_profil' %}" 
+               class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'modifier_profil' %}active{% endif %}">
+                <i class="fas fa-user-cog me-2"></i>Mon profil
+            </a>
+            <a href="{% url 'deconnexion' %}" class="list-group-item list-group-item-action text-danger">
+                <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-circle {
+        width: 80px;
+        height: 80px;
+        background-color: var(--rose);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 3px solid white;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    
+    .list-group-item.active {
+        background-color: var(--bordeaux) !important;
+        border-color: var(--bordeaux) !important;
+        color: white !important;
+    }
+</style>

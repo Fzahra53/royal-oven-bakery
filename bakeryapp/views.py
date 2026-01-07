@@ -327,29 +327,38 @@ def backoffice_livreur_create(request):
 
 def connexion_view(request):
     if request.method == "POST":
-        identifiant = request.POST.get("email", "").strip()   # ton champ s'appelle "email"
+        identifiant = request.POST.get("email", "").strip()
         password = request.POST.get("password", "")
-
+        
         User = get_user_model()
-
-        # Si l'utilisateur a tapé un email, on récupère son username
-        username_to_auth = identifiant
-        if "@" in identifiant:
+        user = None
+        
+        # Essayer d'abord avec l'identifiant comme username
+        user = authenticate(request, username=identifiant, password=password)
+        
+        # Si échec et que c'est un email
+        if user is None and "@" in identifiant:
             try:
-                u = User.objects.get(email__iexact=identifiant)
-                username_to_auth = u.username
-            except User.DoesNotExist:
-                username_to_auth = identifiant  # va échouer proprement
-
-        user = authenticate(request, username=username_to_auth, password=password)
-
-        if user is None:
-            messages.error(request, "Email/username ou mot de passe incorrect.")
+                # Chercher le premier utilisateur avec cet email
+                user_with_email = User.objects.filter(email__iexact=identifiant).first()
+                if user_with_email:
+                    user = authenticate(
+                        request, 
+                        username=user_with_email.username, 
+                        password=password
+                    )
+            except Exception as e:
+                print(f"Erreur lors de la recherche par email: {e}")
+        
+        if user is not None:
+            login(request, user)
+            messages.success(request, "Connexion réussie !")
+            return redirect("mon_compte")
+        else:
+            messages.error(request, "Identifiant ou mot de passe incorrect.")
             return redirect("connexion")
-
-        login(request, user)
-        return redirect("mon_compte")
-
+    
+    # GET request - afficher le formulaire
     return render(request, "bakeryapp/connexion.html")
 
 
@@ -504,4 +513,259 @@ def panier_supprimer(request, produit_id):
         messages.success(request, "Produit supprimé du panier.")
 
     return redirect("mon_panier")
+
+# -------------------------
+# VUES POUR LE COMPTE CLIENT
+# -------------------------
+
+@login_required
+def mes_commandes_view(request):
+    """Afficher l'historique des commandes du client"""
+    client = getattr(request.user, "profil_client", None)
+    commandes = []
+    
+    if client:
+        commandes = Commande.objects.filter(client=client).order_by('-date_commande')[:10]
+    
+    context = {
+        'client': client,
+        'commandes': commandes,
+        'commandes_count': commandes.count() if client else 0,
+    }
+    return render(request, 'bakeryapp/mes_commandes.html', context)
+
+@login_required
+def detail_commande_view(request, pk):
+    """Détail d'une commande spécifique"""
+    commande = get_object_or_404(Commande, pk=pk, client__user=request.user)
+    lignes = commande.lignes.select_related('produit').all()
+    
+    context = {
+        'commande': commande,
+        'lignes': lignes,
+    }
+    return render(request, 'bakeryapp/detail_commande.html', context)
+
+@login_required
+def modifier_profil_view(request):
+    """Modifier les informations du profil client"""
+    client = getattr(request.user, "profil_client", None)
+    
+    if not client:
+        # Créer un profil client si inexistant
+        client = Client.objects.create(
+            user=request.user,
+            nom=request.user.get_full_name() or request.user.username,
+            email=request.user.email,
+            telephone="",
+            adresse="",
+            ville="Rabat"
+        )
+    
+    if request.method == "POST":
+        # Récupérer les données du formulaire
+        nom = request.POST.get("nom", "").strip()
+        telephone = request.POST.get("telephone", "").strip()
+        adresse = request.POST.get("adresse", "").strip()
+        ville = request.POST.get("ville", "Rabat").strip()
+        
+        # Mettre à jour le client
+        client.nom = nom
+        client.telephone = telephone
+        client.adresse = adresse
+        client.ville = ville
+        client.save()
+        
+        # Mettre à jour l'utilisateur Django
+        if ' ' in nom:
+            request.user.first_name = nom.split()[0]
+            request.user.last_name = ' '.join(nom.split()[1:])
+        else:
+            request.user.first_name = nom
+            request.user.last_name = ""
+        request.user.save()
+        
+        messages.success(request, "Profil mis à jour avec succès ✅")
+        return redirect('mon_compte')
+    
+    context = {
+        'client': client,
+    }
+    return render(request, 'bakeryapp/modifier_profil.html', context)
+
+# -------------------------
+# FONCTIONNALITÉS PANIER AMÉLIORÉES
+# -------------------------
+
+@login_required
+def panier_modifier_quantite(request, produit_id):
+    """Modifier la quantité d'un produit dans le panier"""
+    if request.method == "POST":
+        action = request.POST.get("action")
+        panier = _get_panier(request)
+        key = str(produit_id)
+        
+        if key in panier:
+            if action == "augmenter":
+                produit = get_object_or_404(Produit, id=produit_id)
+                if produit.stock > panier[key]:
+                    panier[key] += 1
+                    messages.success(request, f"Quantité augmentée pour {produit.nom}")
+                else:
+                    messages.error(request, "Stock insuffisant")
+            elif action == "diminuer":
+                if panier[key] > 1:
+                    panier[key] -= 1
+                    messages.success(request, "Quantité diminuée")
+                else:
+                    del panier[key]
+                    messages.success(request, "Produit supprimé du panier")
+            elif action == "supprimer":
+                del panier[key]
+                messages.success(request, "Produit supprimé du panier")
+        
+        _save_panier(request, panier)
+    
+    return redirect("mon_panier")
+
+# -------------------------
+# FONCTIONNALITÉS PRODUITS
+# -------------------------
+
+def produits_par_categorie(request, categorie_id):
+    """Afficher les produits par catégorie"""
+    categorie = get_object_or_404(Categorie, id=categorie_id)
+    produits = Produit.objects.filter(categorie=categorie, actif=True)
+    
+    context = {
+        'categorie': categorie,
+        'produits': produits,
+        'categories': Categorie.objects.all(),
+    }
+    return render(request, 'bakeryapp/produits_categorie.html', context)
+
+def produit_detail(request, produit_id):
+    """Détail d'un produit avec avis"""
+    produit = get_object_or_404(Produit, id=produit_id, actif=True)
+    avis = produit.avis.filter(approuve=True)[:5]
+    
+    context = {
+        'produit': produit,
+        'avis': avis,
+        'produits_similaires': Produit.objects.filter(
+            categorie=produit.categorie, 
+            actif=True
+        ).exclude(id=produit.id)[:4],
+    }
+    return render(request, 'bakeryapp/produit_detail.html', context)
+
+# -------------------------
+# FONCTIONNALITÉS AVIS
+# -------------------------
+
+@login_required
+def ajouter_avis(request, produit_id):
+    """Ajouter un avis sur un produit"""
+    produit = get_object_or_404(Produit, id=produit_id)
+    client = getattr(request.user, "profil_client", None)
+    
+    if not client:
+        messages.error(request, "Vous devez avoir un profil client pour laisser un avis")
+        return redirect('produit_detail', produit_id=produit_id)
+    
+    # Vérifier si le client a déjà commandé ce produit
+    a_commande = Commande.objects.filter(
+        client=client,
+        lignes__produit=produit,
+        statut="LIVREE"
+    ).exists()
+    
+    if not a_commande:
+        messages.error(request, "Vous devez avoir commandé ce produit pour laisser un avis")
+        return redirect('produit_detail', produit_id=produit_id)
+    
+    if request.method == "POST":
+        note = request.POST.get("note", 5)
+        commentaire = request.POST.get("commentaire", "").strip()
+        
+        # Créer ou mettre à jour l'avis
+        avis, created = Avis.objects.update_or_create(
+            client=client,
+            produit=produit,
+            defaults={
+                'note': note,
+                'commentaire': commentaire,
+                'approuve': False  # Nécessite validation admin
+            }
+        )
+        
+        messages.success(request, "Votre avis a été soumis. Il sera publié après modération.")
+        return redirect('produit_detail', produit_id=produit_id)
+    
+    return redirect('produit_detail', produit_id=produit_id)
+
+# -------------------------
+# FONCTIONNALITÉS FAVORIS
+# -------------------------
+
+@login_required
+def ajouter_favori(request, produit_id):
+    """Ajouter un produit aux favoris"""
+    produit = get_object_or_404(Produit, id=produit_id)
+    favoris = request.session.get('favoris', [])
+    
+    if produit_id not in favoris:
+        favoris.append(produit_id)
+        request.session['favoris'] = favoris
+        messages.success(request, f"{produit.nom} ajouté aux favoris ❤️")
+    else:
+        messages.info(request, f"{produit.nom} est déjà dans vos favoris")
+    
+    return redirect(request.META.get('HTTP_REFERER', 'produits'))
+
+@login_required
+def retirer_favori(request, produit_id):
+    """Retirer un produit des favoris"""
+    favoris = request.session.get('favoris', [])
+    
+    if produit_id in favoris:
+        favoris.remove(produit_id)
+        request.session['favoris'] = favoris
+        messages.success(request, "Produit retiré des favoris")
+    
+    return redirect('mes_favoris')
+
+@login_required
+def mes_favoris(request):
+    """Afficher la liste des produits favoris"""
+    favoris_ids = request.session.get('favoris', [])
+    produits = Produit.objects.filter(id__in=favoris_ids, actif=True)
+    
+    context = {
+        'produits': produits,
+    }
+    return render(request, 'bakeryapp/mes_favoris.html', context)
+
+# -------------------------
+# FONCTIONNALITÉS RECHERCHE
+# -------------------------
+
+def recherche(request):
+    """Recherche de produits"""
+    query = request.GET.get('q', '').strip()
+    produits = []
+    
+    if query:
+        produits = Produit.objects.filter(
+            models.Q(nom__icontains=query) | 
+            models.Q(description__icontains=query),
+            actif=True
+        )[:20]
+    
+    context = {
+        'query': query,
+        'produits': produits,
+        'nombre_resultats': produits.count(),
+    }
+    return render(request, 'bakeryapp/recherche.html', context)
 

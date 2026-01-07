@@ -10,10 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Créez le chemin du dossier logs
+LOG_DIR = BASE_DIR / 'logs'
 
 
 # Quick-start development settings - unsuitable for production
@@ -25,7 +28,7 @@ SECRET_KEY = 'django-insecure-4jpvvm4$d^ei%*g&e!1g&a&$o9vo$74@)1rm+cx%02jy66y-6y
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'testserver']
 
 
 # Application definition
@@ -37,8 +40,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',  # Pour les filtres de formatage
+    
+    # Apps locales
     'bakeryapp',
-
 ]
 
 MIDDLEWARE = [
@@ -49,6 +54,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
+    # Middleware personnalisé
+    'bakeryapp.middleware.AdminSessionTimeoutMiddleware',
 ]
 
 ROOT_URLCONF = 'bakery.urls'
@@ -56,13 +64,21 @@ ROOT_URLCONF = 'bakery.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            BASE_DIR / 'templates',  # Dossier templates global
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.media',  # Pour MEDIA_URL
+                'django.template.context_processors.static',  # Pour STATIC_URL
+                # Context processors personnalisés
+                'bakeryapp.context_processors.cart_context',
+                'bakeryapp.context_processors.global_context',
             ],
         },
     },
@@ -79,13 +95,15 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'bakery_db',
         'USER': 'root',
-        'PASSWORD': 'NewStrongPassword123!',
+        'PASSWORD': '1234',
         'HOST': 'localhost',
         'PORT': '3306',
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            'charset': 'utf8mb4',
+        }
     }
 }
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -96,6 +114,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 8,
+        }
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
@@ -109,11 +130,13 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'fr-fr'  # Changé pour français
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Africa/Casablanca'  # Fuseau horaire du Maroc
 
 USE_I18N = True
+
+USE_L10N = True  # Formatage local
 
 USE_TZ = True
 
@@ -122,16 +145,127 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# Dossiers statics
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',  # Dossier static global
+    BASE_DIR / 'bakeryapp/static',  # Dossier static de l'app
+]
+
+# Pour collectstatic en production
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Fichiers médias (images uploadées)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/6.0/ref/settings/#default-auto-field
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-
-
+# Authentication settings
 LOGIN_URL = "/connexion/"
 LOGIN_REDIRECT_URL = "/mon-compte/"
 LOGOUT_REDIRECT_URL = "/"
 
-# Media files (uploaded images)
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+# Session settings
+SESSION_COOKIE_AGE = 1209600  # 2 semaines en secondes
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_NAME = 'bakery_session'
+SESSION_COOKIE_SECURE = False  # Mettre à True en production avec HTTPS
+SESSION_COOKIE_HTTPONLY = True
 
+# CSRF settings
+CSRF_COOKIE_SECURE = False  # Mettre à True en production avec HTTPS
+CSRF_COOKIE_HTTPONLY = True
+
+# Messages framework
+from django.contrib.messages import constants as messages
+
+MESSAGE_TAGS = {
+    messages.DEBUG: 'secondary',
+    messages.INFO: 'info',
+    messages.SUCCESS: 'success',
+    messages.WARNING: 'warning',
+    messages.ERROR: 'danger',
+}
+
+MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
+
+# Email configuration (pour développement)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Affiche les emails dans la console
+# En production, utilisez:
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'votre_email@gmail.com'
+# EMAIL_HOST_PASSWORD = 'votre_mot_de_passe'
+
+# Security settings (à activer en production)
+if DEBUG:
+    # En développement
+    SECURE_BROWSER_XSS_FILTER = False
+    SECURE_CONTENT_TYPE_NOSNIFF = False
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+else:
+    # En production
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+# Logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': LOG_DIR / 'debug.log',
+            'formatter': 'simple',
+        },
+    },
+    'root': {
+        'handlers': ['console', 'file'],
+        'level': 'INFO',
+    },
+}
+
+# Custom settings
+BAKERY_NAME = "Royal Oven"
+BAKERY_ADDRESS = "Agdal, Rabat • Maroc"
+BAKERY_PHONE = "+212 6 12 34 56 78"
+BAKERY_EMAIL = "contact_royal_oven@gmail.com"
+BAKERY_OPENING_HOURS = "Lundi - Vendredi: 7h - 20h • Samedi: 7h - 21h • Dimanche: 8h - 14h"
+
+# Configuration livraison
+DELIVERY_FEE = 20.00  # Frais de livraison en DH
+FREE_DELIVERY_THRESHOLD = 100.00  # Livraison gratuite à partir de 100 DH
+DELIVERY_TIME = "30-45 minutes"  # Temps de livraison estimé
+
+# Configuration stock
+LOW_STOCK_THRESHOLD = 5  # Seuil d'alerte stock faible
+OUT_OF_STOCK_THRESHOLD = 0  # Seuil rupture de stock
+
+# Configuration commandes
+ORDER_EXPIRY_MINUTES = 30  # Temps d'expiration d'une commande en attente
