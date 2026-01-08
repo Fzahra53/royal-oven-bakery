@@ -1,0 +1,61 @@
+{% extends 'backoffice/base_simple.html' %}
+
+{% block title %}Produits{% endblock %}
+{% block page_title %}Gestion des produits{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="d-flex justify-content-between mb-4">
+        <h4>Liste des produits</h4>
+        <a href="{% url 'backoffice_product_create' %}" class="btn btn-primary">
+            + Nouveau produit
+        </a>
+    </div>
+    
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Catégorie</th>
+                <th>Prix</th>
+                <th>Stock</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for produit in produits %}
+            <tr>
+                <td>{{ produit.nom }}</td>
+                <td>
+                    {% if produit.categorie %}
+                    <span class="badge bg-info">{{ produit.categorie.nom }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ produit.prix }} €</td>
+                <td>
+                    {% if produit.stock > 0 %}
+                    <span class="badge bg-success">{{ produit.stock }}</span>
+                    {% else %}
+                    <span class="badge bg-danger">0</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'backoffice_product_update' produit.id %}" class="btn btn-sm btn-warning">
+                        ✏️
+                    </a>
+                    <a href="{% url 'backoffice_product_delete' produit.id %}" class="btn btn-sm btn-danger">
+                        🗑️
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center">
+                    Aucun produit. <a href="{% url 'backoffice_product_create' %}">Ajoutez-en un</a>.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

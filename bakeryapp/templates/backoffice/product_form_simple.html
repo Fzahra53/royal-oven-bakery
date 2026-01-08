@@ -1,0 +1,56 @@
+{% extends 'backoffice/base_simple.html' %}
+
+{% block title %}{{ produit|yesno:"Modifier,Ajouter" }} produit{% endblock %}
+{% block page_title %}{{ produit|yesno:"Modifier,Ajouter" }} un produit{% endblock %}
+
+{% block content %}
+<div class="card">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="mb-3">
+            <label>Nom du produit *</label>
+            <input type="text" name="nom" class="form-control" value="{{ produit.nom|default:'' }}" required>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label>Prix (€) *</label>
+                <input type="number" name="prix" step="0.01" class="form-control" 
+                       value="{{ produit.prix|default:'0' }}" required>
+            </div>
+            <div class="col-md-6">
+                <label>Stock</label>
+                <input type="number" name="stock" class="form-control" 
+                       value="{{ produit.stock|default:'0' }}">
+            </div>
+        </div>
+        
+        <div class="mb-3">
+            <label>Description</label>
+            <textarea name="description" class="form-control" rows="2">{{ produit.description|default:'' }}</textarea>
+        </div>
+        
+        <div class="mb-3">
+            <label>Image (optionnel)</label>
+            <input type="file" name="image" class="form-control">
+        </div>
+        
+        <div class="mb-3">
+            <label>
+                <input type="checkbox" name="actif" {% if produit.actif or not produit %}checked{% endif %}>
+                Produit actif
+            </label>
+        </div>
+        
+        <div class="d-flex justify-content-between">
+            <a href="{% url 'backoffice_products_list' %}" class="btn btn-secondary">
+                ← Retour
+            </a>
+            <button type="submit" class="btn btn-primary">
+                💾 Enregistrer
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

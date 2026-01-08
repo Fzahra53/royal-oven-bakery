@@ -1,0 +1,338 @@
+{% extends 'bakeryapp/base.html' %}
+
+{% block title %}{{ produit.nom }} • Royal Oven{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Fil d'Ariane -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'accueil' %}">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'produits' %}">Produits</a></li>
+            {% if produit.categorie %}
+            <li class="breadcrumb-item"><a href="{% url 'produits_categorie' produit.categorie.id %}">{{ produit.categorie.nom }}</a></li>
+            {% endif %}
+            <li class="breadcrumb-item active" aria-current="page">{{ produit.nom }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Images produit -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-0">
+                    {% if produit.image %}
+                    <img src="{{ produit.image.url }}" alt="{{ produit.nom }}" 
+                         class="img-fluid rounded" id="main-product-image">
+                    {% else %}
+                    <div class="d-flex align-items-center justify-content-center bg-light rounded" 
+                         style="height: 400px;">
+                        <i class="fas fa-bread-slice fa-5x text-muted"></i>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Infos produit -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <!-- Catégorie -->
+                    {% if produit.categorie %}
+                    <span class="badge bg-rose text-bordeaux mb-3">
+                        {{ produit.categorie.nom }}
+                    </span>
+                    {% endif %}
+
+                    <!-- Nom -->
+                    <h1 class="h2 mb-3">{{ produit.nom }}</h1>
+
+                    <!-- Prix -->
+                    <div class="mb-4">
+                        <h3 class="text-bordeaux">{{ produit.prix_actuel }} DH</h3>
+                        {% if produit.stock > 0 %}
+                        <span class="text-success">
+                            <i class="fas fa-check-circle me-1"></i>En stock
+                        </span>
+                        {% else %}
+                        <span class="text-danger">
+                            <i class="fas fa-times-circle me-1"></i>Rupture de stock
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <h5 class="mb-3">Description</h5>
+                        <p class="text-muted">{{ produit.description|default:"Produit frais et artisanal." }}</p>
+                    </div>
+
+                    <!-- Ajout au panier -->
+                    <div class="mb-4">
+                        {% if produit.stock > 0 %}
+                        <form method="post" action="{% url 'panier_ajouter' produit.id %}" class="d-flex align-items-center gap-3">
+                            {% csrf_token %}
+                            <div class="input-group" style="width: 150px;">
+                                <button class="btn btn-outline-secondary" type="button" id="decrement">-</button>
+                                <input type="number" class="form-control text-center" value="1" min="1" 
+                                       max="{{ produit.stock }}" id="quantity" name="quantity">
+                                <button class="btn btn-outline-secondary" type="button" id="increment">+</button>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-lg flex-grow-1">
+                                <i class="fas fa-cart-plus me-2"></i>Ajouter au panier
+                            </button>
+                        </form>
+                        {% else %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Ce produit est actuellement en rupture de stock.
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Informations supplémentaires -->
+                    <div class="row text-center g-3">
+                        <div class="col-md-4">
+                            <div class="border rounded p-3">
+                                <i class="fas fa-shipping-fast fa-2x text-bordeaux mb-2"></i>
+                                <h6>Livraison gratuite</h6>
+                                <small class="text-muted">À Rabat</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border rounded p-3">
+                                <i class="fas fa-leaf fa-2x text-bordeaux mb-2"></i>
+                                <h6>Produit frais</h6>
+                                <small class="text-muted">Fait maison</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border rounded p-3">
+                                <i class="fas fa-award fa-2x text-bordeaux mb-2"></i>
+                                <h6>Qualité premium</h6>
+                                <small class="text-muted">Ingrédients sélectionnés</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Avis -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h4 class="mb-4">
+                        <i class="fas fa-star text-warning me-2"></i>
+                        Avis clients
+                        <span class="badge bg-secondary ms-2">{{ avis|length }}</span>
+                    </h4>
+
+                    {% if avis %}
+                    <div class="row">
+                        {% for avi in avis %}
+                        <div class="col-md-6 mb-3">
+                            <div class="border-start border-3 border-bordeaux ps-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <strong>{{ avi.client.nom|default:"Anonyme" }}</strong>
+                                    <div>
+                                        {% for i in "12345" %}
+                                        {% if forloop.counter <= avi.note %}
+                                        <i class="fas fa-star text-warning"></i>
+                                        {% else %}
+                                        <i class="far fa-star text-warning"></i>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <p class="text-muted mb-0">{{ avi.commentaire }}</p>
+                                <small class="text-muted">{{ avi.date_creation|date:"d/m/Y" }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Aucun avis pour ce produit.</p>
+                        {% if user.is_authenticated %}
+                        <a href="#ajouter-avis" class="btn btn-outline-primary">
+                            Soyez le premier à noter
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Formulaire avis (connecté seulement) -->
+                    {% if user.is_authenticated %}
+                    <div class="mt-4" id="ajouter-avis">
+                        <h5>Donnez votre avis</h5>
+                        <form method="post" action="{% url 'ajouter_avis' produit.id %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label">Note</label>
+                                <div class="rating">
+                                    {% for i in "54321" %}
+                                    <input type="radio" id="star{{ i }}" name="note" value="{{ i }}" 
+                                           {% if forloop.first %}checked{% endif %}>
+                                    <label for="star{{ i }}"><i class="fas fa-star"></i></label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Commentaire</label>
+                                <textarea class="form-control" name="commentaire" rows="3" 
+                                          placeholder="Partagez votre expérience..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Envoyer l'avis
+                            </button>
+                        </form>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info mt-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <a href="{% url 'connexion' %}" class="alert-link">Connectez-vous</a> pour laisser un avis.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Produits similaires -->
+    {% if produits_similaires %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4>Produits similaires</h4>
+                <a href="{% url 'produits_categorie' produit.categorie.id %}" class="btn btn-outline-primary">
+                    Voir tous <i class="fas fa-arrow-right ms-2"></i>
+                </a>
+            </div>
+            
+            <div class="row g-4">
+                {% for similaire in produits_similaires %}
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="card product-card h-100">
+                        <div class="position-relative">
+                            {% if similaire.image %}
+                            <img src="{{ similaire.image.url }}" class="card-img-top product-img" 
+                                 alt="{{ similaire.nom }}">
+                            {% else %}
+                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
+                                 style="height: 200px;">
+                                <i class="fas fa-bread-slice fa-3x text-muted"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">{{ similaire.nom }}</h5>
+                            <p class="card-text text-muted small flex-grow-1">
+                                {{ similaire.description|truncatechars:60|default:"Produit frais" }}
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center mt-auto">
+                                <span class="h5 mb-0 text-bordeaux">{{ similaire.prix_actuel }} DH</span>
+                                <a href="{% url 'produit_detail' similaire.id %}" class="btn btn-sm btn-outline-primary">
+                                    Voir
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    /* Style pour le compteur quantité */
+    .input-group button {
+        width: 45px;
+    }
+    
+    /* Style pour les étoiles de notation */
+    .rating {
+        display: inline-block;
+        unicode-bidi: bidi-override;
+        direction: rtl;
+    }
+    
+    .rating > input {
+        display: none;
+    }
+    
+    .rating > label {
+        display: inline-block;
+        font-size: 1.5rem;
+        color: #ddd;
+        cursor: pointer;
+    }
+    
+    .rating > input:checked ~ label,
+    .rating > label:hover,
+    .rating > label:hover ~ label {
+        color: #ffc107;
+    }
+    
+    /* Style pour les cartes produits */
+    .product-card {
+        border: 1px solid #eee;
+        border-radius: 10px;
+        overflow: hidden;
+        transition: all 0.3s;
+    }
+    
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .product-img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+    
+    /* Style pour les badges */
+    .badge.bg-rose {
+        background-color: #FFE4E1;
+        color: #8B0000;
+        padding: 5px 15px;
+        border-radius: 20px;
+    }
+</style>
+
+<script>
+    // Gestion du compteur quantité
+    document.getElementById('increment').addEventListener('click', function() {
+        var input = document.getElementById('quantity');
+        var max = parseInt(input.max);
+        if (parseInt(input.value) < max) {
+            input.value = parseInt(input.value) + 1;
+        }
+    });
+    
+    document.getElementById('decrement').addEventListener('click', function() {
+        var input = document.getElementById('quantity');
+        if (parseInt(input.value) > 1) {
+            input.value = parseInt(input.value) - 1;
+        }
+    });
+    
+    // Empêcher la saisie manuelle hors limites
+    document.getElementById('quantity').addEventListener('change', function() {
+        var min = parseInt(this.min);
+        var max = parseInt(this.max);
+        var value = parseInt(this.value);
+        
+        if (value < min) this.value = min;
+        if (value > max) this.value = max;
+    });
+</script>
+{% endblock %}

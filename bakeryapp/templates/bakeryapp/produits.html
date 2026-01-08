@@ -1,47 +1,206 @@
-<div class="row g-4">
-  {% for produit in produits %}
-  <div class="col-lg-3 col-md-4 col-sm-6">
-    <div class="product-card">
-      <div class="position-relative">
-        {% if produit.image %}
-          <img src="{{ produit.image.url }}" class="product-img" alt="{{ produit.nom }}">
-        {% else %}
-          <img src="https://via.placeholder.com/500" class="product-img" alt="{{ produit.nom }}">
-        {% endif %}
-      </div>
+{% extends 'bakeryapp/base.html' %}
 
-      <div class="p-4">
-        <div class="d-flex justify-content-between align-items-start mb-2">
-          <h5 class="mb-0">{{ produit.nom }}</h5>
-          <span class="badge bg-rose text-bordeaux">
-            {{ produit.categorie.nom|default:"Produit" }}
-          </span>
-        </div>
+{% block title %}Nos Produits • Royal Oven{% endblock %}
 
-        <p class="text-muted small mb-3">
-          {{ produit.description|default:"Produit frais du jour" }}
-        </p>
-
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <span class="price">{{ produit.prix_actuel }}</span>
-          </div>
-
-          <div class="btn-group">
-          {% if user.is_authenticated %}
-  <a href="{% url 'panier_ajouter' produit.id %}" class="btn btn-primary w-100 mt-3">
-    <i class="fas fa-cart-plus me-2"></i> Ajouter au panier
-  </a>
-{% else %}
-  <a href="{% url 'connexion' %}" class="btn btn-outline-primary w-100 mt-3">
-    <i class="fas fa-sign-in-alt me-2"></i> Se connecter
-  </a>
-{% endif %}
-
-          </div>
-        </div>
-      </div>
+{% block content %}
+<div class="container py-5">
+    <!-- Titre et description -->
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-bordeaux mb-3">Nos délicieuses pâtisseries</h1>
+        <p class="text-muted lead">Découvrez notre sélection de produits frais faits maison avec passion</p>
     </div>
-  </div>
-  {% endfor %}
+
+    <!-- Filtres par catégorie -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="d-flex flex-wrap gap-2 justify-content-center">
+                <a href="{% url 'produits' %}" 
+                   class="btn {% if not request.GET.categorie %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                    Tous les produits
+                </a>
+                {% for categorie in categories %}
+                <a href="{% url 'produits_categorie' categorie.id %}" 
+                   class="btn {% if request.GET.categorie == categorie.id|stringformat:'i' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                    {{ categorie.nom }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Grille des produits -->
+    {% if produits %}
+    <div class="row g-4">
+        {% for produit in produits %}
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card product-card h-100 border-0 shadow-sm">
+                <!-- Image -->
+                <div class="position-relative overflow-hidden" style="height: 200px;">
+                    {% if produit.image %}
+                    <img src="{{ produit.image.url }}" 
+                         class="card-img-top h-100 w-100" 
+                         alt="{{ produit.nom }}"
+                         style="object-fit: cover;">
+                    {% else %}
+                    <div class="h-100 w-100 bg-light d-flex align-items-center justify-content-center">
+                        <i class="fas fa-bread-slice fa-3x text-muted"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Badge catégorie -->
+                    {% if produit.categorie %}
+                    <div class="position-absolute top-0 end-0 m-3">
+                        <span class="badge bg-rose text-bordeaux">
+                            {{ produit.categorie.nom }}
+                        </span>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Badge rupture stock -->
+                    {% if produit.stock <= 0 %}
+                    <div class="position-absolute top-0 start-0 w-100 bg-danger text-white text-center py-1">
+                        <small>Rupture de stock</small>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Contenu -->
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title mb-2">{{ produit.nom }}</h5>
+                    
+                    <p class="card-text text-muted small flex-grow-1 mb-3">
+                        {{ produit.description|truncatechars:80|default:"Produit frais du jour" }}
+                    </p>
+                    
+                    <!-- Prix et stock -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="text-bordeaux mb-0">{{ produit.prix_actuel }} DH</h4>
+                        {% if produit.stock > 0 %}
+                        <small class="text-success">
+                            <i class="fas fa-check-circle"></i> En stock
+                        </small>
+                        {% else %}
+                        <small class="text-danger">
+                            <i class="fas fa-times-circle"></i> Épuisé
+                        </small>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Boutons -->
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'produit_detail' produit.id %}" 
+                           class="btn btn-outline-primary">
+                            <i class="fas fa-eye me-2"></i>Voir détails
+                        </a>
+                        
+                        {% if produit.stock > 0 %}
+                        {% if user.is_authenticated %}
+                        <form method="post" action="{% url 'panier_ajouter' produit.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-cart-plus me-2"></i>Ajouter au panier
+                            </button>
+                        </form>
+                        {% else %}
+                        <a href="{% url 'connexion' %}" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-sign-in-alt me-2"></i>Connectez-vous
+                        </a>
+                        {% endif %}
+                        {% else %}
+                        <button class="btn btn-secondary w-100" disabled>
+                            <i class="fas fa-ban me-2"></i>Indisponible
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination (optionnel) -->
+    {% if produits.paginator.num_pages > 1 %}
+    <nav class="mt-5">
+        <ul class="pagination justify-content-center">
+            {% if produits.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ produits.previous_page_number }}">Précédent</a>
+            </li>
+            {% endif %}
+            
+            {% for num in produits.paginator.page_range %}
+            <li class="page-item {% if produits.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endfor %}
+            
+            {% if produits.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ produits.next_page_number }}">Suivant</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    
+    {% else %}
+    <!-- Aucun produit -->
+    <div class="text-center py-5">
+        <i class="fas fa-box-open fa-4x text-muted mb-4"></i>
+        <h3 class="text-muted">Aucun produit disponible</h3>
+        <p class="text-muted">Revenez bientôt pour découvrir nos nouvelles créations</p>
+        <a href="{% url 'accueil' %}" class="btn btn-primary">
+            <i class="fas fa-home me-2"></i>Retour à l'accueil
+        </a>
+    </div>
+    {% endif %}
 </div>
+
+<style>
+    /* Styles spécifiques pour la page produits */
+    .product-card {
+        transition: all 0.3s ease;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .product-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .badge.bg-rose {
+        background-color: #FFE4E1 !important;
+        color: #8B0000 !important;
+        font-weight: 500;
+        padding: 5px 12px;
+        border-radius: 20px;
+    }
+    
+    .btn-primary {
+        background-color: #8B0000;
+        border-color: #8B0000;
+    }
+    
+    .btn-primary:hover {
+        background-color: #9b0000;
+        border-color: #9b0000;
+    }
+    
+    .btn-outline-primary {
+        color: #8B0000;
+        border-color: #8B0000;
+    }
+    
+    .btn-outline-primary:hover {
+        background-color: #8B0000;
+        border-color: #8B0000;
+        color: white;
+    }
+    
+    .text-bordeaux {
+        color: #8B0000 !important;
+    }
+</style>
+{% endblock %}

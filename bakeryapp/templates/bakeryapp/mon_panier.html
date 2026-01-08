@@ -1,124 +1,184 @@
-{% extends "bakeryapp/base.html" %}
+{% extends 'bakeryapp/base.html' %}
 
-{% block title %}Mon panier • Royal Oven{% endblock %}
+{% block title %}Mon Panier • Royal Oven{% endblock %}
 
 {% block content %}
 <div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0">Mon panier</h2>
-        <a href="{% url 'produits' %}" class="btn btn-outline-primary">
-            <i class="fas fa-arrow-left me-2"></i>Continuer vos achats
-        </a>
-    </div>
-
-    {% if messages %}
-        {% for m in messages %}
-            <div class="alert alert-info">{{ m }}</div>
-        {% endfor %}
-    {% endif %}
-
-    {% if items %}
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table mb-0 align-middle">
-                        <thead style="background-color: var(--rose);">
-                            <tr>
-                                <th class="py-3 ps-4">Produit</th>
-                                <th class="py-3">Prix</th>
-                                <th class="py-3">Qté</th>
-                                <th class="py-3">Sous-total</th>
-                                <th class="py-3 pe-4 text-end">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for it in items %}
-                            <tr>
-                                <td class="ps-4">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div style="width:70px;height:55px;overflow:hidden;border-radius:10px;">
-                                            {% if it.produit.image %}
-                                                <img src="{{ it.produit.image.url }}" alt="{{ it.produit.nom }}" style="width:100%;height:100%;object-fit:cover;">
-                                            {% elif it.produit.image_url %}
-                                                <img src="{{ it.produit.image_url }}" alt="{{ it.produit.nom }}" style="width:100%;height:100%;object-fit:cover;">
-                                            {% else %}
-                                                <img src="https://via.placeholder.com/200x150?text=Royal+Oven" alt="{{ it.produit.nom }}" style="width:100%;height:100%;object-fit:cover;">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0 text-bordeaux">
+                        <i class="fas fa-shopping-cart me-2"></i>Mon Panier
+                        {% if items %}
+                        <span class="badge bg-primary ms-2">{{ items|length }}</span>
+                        {% endif %}
+                    </h4>
+                </div>
+                
+                <div class="card-body">
+                    {% if items %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th width="100">Produit</th>
+                                    <th>Détails</th>
+                                    <th class="text-center">Prix</th>
+                                    <th class="text-center">Quantité</th>
+                                    <th class="text-center">Sous-total</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in items %}
+                                <tr>
+                                    <td>
+                                        {% if item.produit.image %}
+                                        <img src="{{ item.produit.image.url }}" alt="{{ item.produit.nom }}" 
+                                             class="img-thumbnail" style="width: 80px; height: 80px; object-fit: cover;">
+                                        {% else %}
+                                        <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                             style="width: 80px; height: 80px;">
+                                            <i class="fas fa-bread-slice text-muted fa-2x"></i>
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <h6 class="mb-1">{{ item.produit.nom }}</h6>
+                                        <small class="text-muted">
+                                            {% if item.produit.categorie %}
+                                            {{ item.produit.categorie.nom }}
                                             {% endif %}
+                                        </small>
+                                    </td>
+                                    <td class="text-center">
+                                        <strong>{{ item.produit.prix_actuel }} DH</strong>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group" role="group">
+                                            <form method="post" action="{% url 'panier_modifier_quantite' item.produit.id %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="diminuer">
+                                                <button type="submit" class="btn btn-outline-secondary btn-sm">
+                                                    <i class="fas fa-minus"></i>
+                                                </button>
+                                            </form>
+                                            <span class="px-3 align-self-center">{{ item.qty }}</span>
+                                            <form method="post" action="{% url 'panier_modifier_quantite' item.produit.id %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="augmenter">
+                                                <button type="submit" class="btn btn-outline-secondary btn-sm">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </form>
                                         </div>
-                                        <div>
-                                            <div class="fw-semibold">{{ it.produit.nom }}</div>
-                                            <div class="text-muted small">
-                                                {% if it.produit.categorie %}{{ it.produit.categorie.nom }}{% else %}{{ it.produit.get_type_produit_display }}{% endif %}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
+                                    </td>
+                                    <td class="text-center">
+                                        <strong class="text-bordeaux">{{ item.subtotal }} DH</strong>
+                                    </td>
+                                    <td class="text-center">
+                                        <form method="post" action="{% url 'panier_modifier_quantite' item.produit.id %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="supprimer">
+                                            <button type="submit" class="btn btn-danger btn-sm" 
+                                                    onclick="return confirm('Supprimer ce produit ?')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
 
-                                <td>
-                                    {{ it.produit.prix_actuel }} DH
-                                </td>
+                    <!-- Dans mon_panier.html, ajoutez ce bouton -->
+                    <div class="mt-3">
+                        <a href="{% url 'panier_vider' %}" class="btn btn-danger w-100" 
+                           onclick="return confirm('Vider tout le panier ?')">
+                            <i class="fas fa-trash me-2"></i>Vider tout le panier
+                        </a>
+                    </div>
 
-                                <td>
-                                    <span class="badge bg-light text-dark">{{ it.qty }}</span>
-                                </td>
-
-                                <td class="fw-semibold">
-                                    {{ it.subtotal }} DH
-                                </td>
-
-                                <td class="pe-4 text-end">
-                                    <a class="btn btn-sm btn-outline-danger"
-                                       href="{% url 'panier_supprimer' it.produit.id %}">
-                                        <i class="fas fa-trash me-1"></i>Supprimer
-                                    </a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-shopping-cart fa-4x text-muted mb-4"></i>
+                        <h4 class="text-muted">Votre panier est vide</h4>
+                        <p class="text-muted mb-4">Ajoutez des produits pour commencer vos achats</p>
+                        <a href="{% url 'produits' %}" class="btn btn-primary">
+                            <i class="fas fa-store me-2"></i>Voir nos produits
+                        </a>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
+            
+            {% if items %}
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'produits' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Continuer mes achats
+                </a>
+                <a href="{% url 'panier_supprimer' 0 %}" class="btn btn-outline-danger" 
+                   onclick="return confirm('Vider tout le panier ?')">
+                    <i class="fas fa-trash me-2"></i>Vider le panier
+                </a>
+            </div>
+            {% endif %}
         </div>
-
-        <div class="row mt-4">
-            <div class="col-lg-6">
-                <div class="alert alert-info border-0" style="background-color: var(--rose); border-left: 4px solid var(--bordeaux);">
-                    <i class="fas fa-info-circle me-2 text-bordeaux"></i>
-                    Livraison gratuite à partir de <strong>100 DH</strong>.
+        
+        {% if items %}
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 sticky-top" style="top: 100px;">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0 text-bordeaux">
+                        <i class="fas fa-receipt me-2"></i>Récapitulatif
+                    </h5>
                 </div>
-            </div>
-
-            <div class="col-lg-6">
-                <div class="card shadow-sm border-0">
-                    <div class="card-body">
-                        <h5 class="mb-3">Récapitulatif</h5>
-                        <div class="d-flex justify-content-between">
-                            <span>Total</span>
-                            <span class="fw-bold">{{ total }} DH</span>
-                        </div>
-
-                        <hr>
-
-                        <a href="{% url 'valider_commande' %}" class="btn btn-primary w-100">
-    <i class="fas fa-credit-card me-2"></i>Passer à la commande
-</a>
-
-
-                        <p class="text-muted small mt-2 mb-0">
-                            (On activera ce bouton quand tu feras la page Checkout / Commande)
-                        </p>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Sous-total</span>
+                        <strong>{{ total }} DH</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Livraison</span>
+                        <strong>Gratuite</strong>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-4">
+                        <h5>Total</h5>
+                        <h4 class="text-bordeaux">{{ total }} DH</h4>
+                    </div>
+                    
+                    <a href="{% url 'valider_commande' %}" class="btn btn-primary w-100 py-3 mb-3">
+                        <i class="fas fa-check-circle me-2"></i>Valider la commande
+                    </a>
+                    
+                    <div class="alert alert-info small">
+                        <i class="fas fa-info-circle me-2"></i>
+                        La livraison est offerte pour toute commande à Rabat.
                     </div>
                 </div>
             </div>
         </div>
-
-    {% else %}
-        <div class="alert alert-warning">
-            Votre panier est vide.
-        </div>
-        <a href="{% url 'produits' %}" class="btn btn-primary">
-            Voir les produits
-        </a>
-    {% endif %}
+        {% endif %}
+    </div>
 </div>
+
+<style>
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        color: #666;
+    }
+    
+    .table td {
+        vertical-align: middle;
+    }
+    
+    .sticky-top {
+        position: sticky;
+        z-index: 1020;
+    }
+</style>
 {% endblock %}

@@ -19,6 +19,8 @@ urlpatterns = [
     path('panier/ajouter/<int:produit_id>/', views.panier_ajouter, name='panier_ajouter'),
     path('panier/supprimer/<int:produit_id>/', views.panier_supprimer, name='panier_supprimer'),
     path('panier/modifier/<int:produit_id>/', views.panier_modifier_quantite, name='panier_modifier_quantite'),
+    path('panier/vider/', views.panier_vider, name='panier_vider'),
+    path('debug-panier/', views.debug_panier, name='debug_panier'),
 
     # Profil et commandes client
     path('mes-commandes/', views.mes_commandes_view, name='mes_commandes'),

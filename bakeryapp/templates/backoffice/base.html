@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Backoffice • Royal Oven{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bordeaux: #8B0000;
+            --rose: #FFE4E1;
+            --beige: #F5F5DC;
+            --gold: #DAA520;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            background: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+            padding-top: 20px;
+            box-shadow: 3px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar .logo {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .sidebar .logo h4 {
+            color: white;
+            margin: 0;
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 25px;
+            margin: 5px 15px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .sidebar .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        
+        .sidebar .nav-link.active {
+            background: var(--bordeaux);
+            color: white;
+        }
+        
+        .sidebar .nav-link i {
+            width: 25px;
+            margin-right: 10px;
+        }
+        
+        /* Main content */
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+        
+        .header {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        }
+        
+        .btn-primary {
+            background-color: var(--bordeaux);
+            border-color: var(--bordeaux);
+        }
+        
+        .btn-primary:hover {
+            background-color: #9b0000;
+            border-color: #9b0000;
+        }
+        
+        .badge-bordeaux {
+            background-color: var(--bordeaux);
+            color: white;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+            .sidebar .logo span,
+            .sidebar .nav-link span {
+                display: none;
+            }
+            .sidebar .nav-link {
+                text-align: center;
+                padding: 12px 5px;
+                margin: 5px;
+            }
+            .sidebar .nav-link i {
+                margin-right: 0;
+            }
+            .main-content {
+                margin-left: 70px;
+            }
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar d-none d-md-block">
+        <div class="logo">
+            <h4><i class="fas fa-crown me-2"></i> <span>Royal Oven</span></h4>
+            <small class="text-muted">Backoffice</small>
+        </div>
+        
+        <nav class="nav flex-column">
+            <a href="{% url 'backoffice_dashboard' %}" class="nav-link {% if request.path == '/backoffice/' %}active{% endif %}">
+                <i class="fas fa-tachometer-alt"></i> <span>Tableau de bord</span>
+            </a>
+            <a href="{% url 'backoffice_products_list' %}" class="nav-link {% if 'products' in request.path %}active{% endif %}">
+                <i class="fas fa-boxes"></i> <span>Produits</span>
+            </a>
+            <a href="{% url 'backoffice_orders_list' %}" class="nav-link {% if 'orders' in request.path %}active{% endif %}">
+                <i class="fas fa-shopping-bag"></i> <span>Commandes</span>
+            </a>
+            <a href="{% url 'backoffice_livreurs_list' %}" class="nav-link {% if 'livreurs' in request.path %}active{% endif %}">
+                <i class="fas fa-truck"></i> <span>Livreurs</span>
+            </a>
+            <div class="mt-auto p-3">
+                <a href="{% url 'accueil' %}" class="nav-link text-warning">
+                    <i class="fas fa-store"></i> <span>Boutique</span>
+                </a>
+                <a href="{% url 'deconnexion' %}" class="nav-link text-danger">
+                    <i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header d-flex justify-content-between align-items-center">
+            <div>
+                <h3 class="mb-0">{% block page_title %}Backoffice{% endblock %}</h3>
+                <small class="text-muted">{% block page_subtitle %}Gestion de la boulangerie{% endblock %}</small>
+            </div>
+            <div class="d-flex align-items-center">
+                <span class="me-3">Bonjour, {{ request.user.username }}</span>
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle"></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{% url 'mon_compte' %}"><i class="fas fa-user me-2"></i>Mon compte</a></li>
+                        <li><a class="dropdown-item" href="{% url 'accueil' %}"><i class="fas fa-store me-2"></i>Voir la boutique</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="{% url 'deconnexion' %}"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Messages -->
+        {% if messages %}
+        <div class="messages mb-4">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <!-- Contenu principal -->
+        {% block content %}{% endblock %}
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
