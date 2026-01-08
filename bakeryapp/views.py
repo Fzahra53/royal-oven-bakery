@@ -15,23 +15,19 @@ from .forms import ProduitForm
 from django.contrib.auth import get_user_model
 from django.views.decorators.http import require_http_methods
 from django.utils import timezone
-
-
-
-
-
-
-
+from django.db import models 
 
 def accueil(request):
     produits = Produit.objects.all()[:6]
     return render(request, "bakeryapp/accueil.html", {"produits": produits})
 
-
 def produits(request):
-    produits = Produit.objects.all()
-    return render(request, "bakeryapp/produits.html", {"produits": produits})
-
+    produits_list = Produit.objects.filter(actif=True)
+    categories = Categorie.objects.all()
+    return render(request, "bakeryapp/produits.html", {
+        "produits": produits_list,
+        "categories": categories
+    })
 
 def apropos(request):
     return render(request, "bakeryapp/apropos.html")
@@ -306,20 +302,6 @@ def backoffice_livreur_create(request):
     return render(request, "backoffice/livreur_form.html")
 
 
-
-
-
-
-
-
-    
-      
-    
-
-
-
-
-
 # Vue pour la connexion
 
 
@@ -419,20 +401,41 @@ def inscription_view(request):
 @login_required
 def mon_compte_view(request):
     client = getattr(request.user, "profil_client", None)
-
+    
+    # Si client n'existe pas, créer ou utiliser user
+    nom_a_afficher = ""
+    if client:
+        nom_a_afficher = client.nom
+    elif request.user.get_full_name():
+        nom_a_afficher = request.user.get_full_name()
+    else:
+        nom_a_afficher = request.user.username
+    
+    # Compter les commandes
+    commandes_count = 0
+    if client:
+        commandes_count = Commande.objects.filter(client=client).count()
+    
+    # Calculer les livraisons de cette semaine (exemple)
+    livraisons_count = 0
+    if client:
+        from datetime import timedelta
+        from django.utils import timezone
+        semaine_passee = timezone.now() - timedelta(days=7)
+        livraisons_count = Commande.objects.filter(
+            client=client,
+            date_commande__gte=semaine_passee,
+            statut="LIVREE"
+        ).count()
+    
     context = {
         "client": client,
-        "panier_count": 0,        # pour l’instant
-        "commandes_count": 0,
-        "livraisons_count": 0,
-        "commandes": [],
+        "nom_affichage": nom_a_afficher,
+        "panier_count": len(request.session.get("panier", {})),
+        "commandes_count": commandes_count,
+        "livraisons_count": livraisons_count,
     }
-
     return render(request, "bakeryapp/mon_compte.html", context)
-
-
-
-
 
 
 # Vue pour la déconnexion
@@ -548,50 +551,36 @@ def detail_commande_view(request, pk):
 
 @login_required
 def modifier_profil_view(request):
-    """Modifier les informations du profil client"""
     client = getattr(request.user, "profil_client", None)
     
-    if not client:
-        # Créer un profil client si inexistant
-        client = Client.objects.create(
-            user=request.user,
-            nom=request.user.get_full_name() or request.user.username,
-            email=request.user.email,
-            telephone="",
-            adresse="",
-            ville="Rabat"
-        )
-    
     if request.method == "POST":
-        # Récupérer les données du formulaire
         nom = request.POST.get("nom", "").strip()
         telephone = request.POST.get("telephone", "").strip()
         adresse = request.POST.get("adresse", "").strip()
         ville = request.POST.get("ville", "Rabat").strip()
         
-        # Mettre à jour le client
-        client.nom = nom
-        client.telephone = telephone
-        client.adresse = adresse
-        client.ville = ville
-        client.save()
-        
-        # Mettre à jour l'utilisateur Django
-        if ' ' in nom:
-            request.user.first_name = nom.split()[0]
-            request.user.last_name = ' '.join(nom.split()[1:])
+        if client:
+            client.nom = nom
+            client.telephone = telephone
+            client.adresse = adresse
+            client.ville = ville
+            client.save()
+            messages.success(request, "Profil mis à jour !")
         else:
-            request.user.first_name = nom
-            request.user.last_name = ""
-        request.user.save()
+            # Créer le client
+            client = Client.objects.create(
+                user=request.user,
+                nom=nom,
+                telephone=telephone,
+                email=request.user.email,
+                adresse=adresse,
+                ville=ville
+            )
+            messages.success(request, "Profil créé !")
         
-        messages.success(request, "Profil mis à jour avec succès ✅")
-        return redirect('mon_compte')
+        return redirect("mon_compte")
     
-    context = {
-        'client': client,
-    }
-    return render(request, 'bakeryapp/modifier_profil.html', context)
+    return render(request, "bakeryapp/modifier_profil.html", {"client": client})
 
 # -------------------------
 # FONCTIONNALITÉS PANIER AMÉLIORÉES
