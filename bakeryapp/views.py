@@ -462,6 +462,9 @@ def debug_panier(request):
 
 
 
+
+
+
 # AJOUTEZ CETTE FONCTION POUR VIDER LE PANIER
 @login_required
 def panier_vider(request):
@@ -780,3 +783,178 @@ def delivery_update_status(request, pk):
         return redirect("delivery_my_orders")
 
     return render(request, "delivery/update_status.html", {"livraison": livraison})
+
+from django.contrib.auth.decorators import login_required, user_passes_test
+from .models import Categorie
+
+def is_admin(user):
+    """Vérifie si l'utilisateur est admin"""
+    return user.is_authenticated and user.is_staff
+
+@login_required
+@user_passes_test(is_admin)
+def gestion_categories(request):
+    """Interface pour gérer les catégories"""
+    if request.method == "POST":
+        action = request.POST.get("action")
+        
+        if action == "ajouter":
+            nom = request.POST.get("nom", "").strip()
+            description = request.POST.get("description", "").strip()
+            
+            if nom:
+                categorie, created = Categorie.objects.get_or_create(
+                    nom=nom,
+                    defaults={"description": description}
+                )
+                if created:
+                    messages.success(request, f"Catégorie '{nom}' ajoutée")
+                else:
+                    messages.warning(request, f"Catégorie '{nom}' existe déjà")
+                    
+        elif action == "supprimer":
+            categorie_id = request.POST.get("categorie_id")
+            try:
+                categorie = Categorie.objects.get(id=categorie_id)
+                nom = categorie.nom
+                categorie.delete()
+                messages.success(request, f"Catégorie '{nom}' supprimée")
+            except Categorie.DoesNotExist:
+                messages.error(request, "Catégorie non trouvée")
+    
+    categories = Categorie.objects.all().order_by('nom')
+    return render(request, 'backoffice/gestion_categories.html', {'categories': categories})
+
+from django.http import HttpResponse
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import mm
+from reportlab.lib import colors
+from django.utils import timezone
+
+@login_required
+def generer_facture_pdf(request, commande_id):
+    """Génère une facture PDF pour une commande"""
+    commande = get_object_or_404(Commande, id=commande_id, client__user=request.user)
+    
+    # Créer la réponse PDF
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="facture-commande-{commande.id}.pdf"'
+    
+    # Créer le PDF
+    p = canvas.Canvas(response, pagesize=A4)
+    width, height = A4
+    
+    # En-tête
+    p.setFont("Helvetica-Bold", 20)
+    p.drawString(50, height - 50, "ROYAL OVEN BAKERY")
+    
+    p.setFont("Helvetica", 10)
+    p.drawString(50, height - 70, "Agdal, Rabat • Maroc")
+    p.drawString(50, height - 85, "Tél: +212 6 12 34 56 78")
+    p.drawString(50, height - 100, "Email: contact@royaloven.com")
+    
+    # Titre
+    p.setFont("Helvetica-Bold", 16)
+    p.drawString(50, height - 130, f"FACTURE N° {commande.id}")
+    
+    # Informations client
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(50, height - 160, "CLIENT:")
+    p.setFont("Helvetica", 10)
+    p.drawString(50, height - 175, f"{commande.client.nom}")
+    p.drawString(50, height - 190, f"{commande.client.adresse}")
+    p.drawString(50, height - 205, f"{commande.client.ville}")
+    p.drawString(50, height - 220, f"Email: {commande.client.email}")
+    
+    # Informations commande
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(300, height - 160, "COMMANDE:")
+    p.setFont("Helvetica", 10)
+    p.drawString(300, height - 175, f"N°: {commande.id}")
+    p.drawString(300, height - 190, f"Date: {commande.date_commande.strftime('%d/%m/%Y %H:%M')}")
+    p.drawString(300, height - 205, f"Statut: {commande.get_statut_display()}")
+    
+    # Ligne séparatrice
+    p.line(50, height - 240, width - 50, height - 240)
+    
+    # Détails commande
+    y_position = height - 260
+    p.setFont("Helvetica-Bold", 10)
+    p.drawString(50, y_position, "PRODUIT")
+    p.drawString(250, y_position, "QUANTITÉ")
+    p.drawString(320, y_position, "PRIX UNIT.")
+    p.drawString(400, y_position, "TOTAL")
+    
+    y_position -= 20
+    p.setFont("Helvetica", 9)
+    
+    total = 0
+    for ligne in commande.lignes.all():
+        p.drawString(50, y_position, ligne.produit.nom)
+        p.drawString(250, y_position, f"{ligne.quantite}")
+        p.drawString(320, y_position, f"{ligne.prix_unitaire:.2f} DH")
+        sous_total = ligne.quantite * ligne.prix_unitaire
+        p.drawString(400, y_position, f"{sous_total:.2f} DH")
+        total += sous_total
+        y_position -= 15
+    
+    # Ligne séparatrice
+    p.line(50, y_position - 10, width - 50, y_position - 10)
+    
+    # Total
+    y_position -= 30
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(320, y_position, "TOTAL:")
+    p.drawString(400, y_position, f"{total:.2f} DH")
+    
+    # Mentions
+    y_position -= 50
+    p.setFont("Helvetica", 8)
+    p.drawString(50, y_position, "Merci pour votre commande !")
+    p.drawString(50, y_position - 15, "Livraison offerte dans Rabat pour les commandes de plus de 100 DH")
+    
+    # Pied de page
+    p.setFont("Helvetica", 8)
+    p.drawString(50, 30, f"Généré le {timezone.now().strftime('%d/%m/%Y %H:%M')}")
+    p.drawString(width - 150, 30, "Page 1/1")
+    
+    # Finaliser le PDF
+    p.showPage()
+    p.save()
+    
+    return response
+
+
+from django.contrib.auth.decorators import login_required
+from .models import Categorie
+
+def gestion_categories_simple(request):
+    """Affiche les 4 catégories principales"""
+    categories = Categorie.objects.filter(
+        nom__in=["Viennoiseries", "Pains", "Pâtisseries", "Spécialités Maison"]
+    ).order_by('nom')
+    
+    # Si manquantes, les créer
+    if categories.count() < 4:
+        categories_defaut = [
+            ("Viennoiseries", "Croissants, pains au chocolat, chaussons"),
+            ("Pains", "Pains traditionnels, baguettes, pains spéciaux"),
+            ("Pâtisseries", "Gâteaux, tartes, éclairs, desserts"),
+            ("Spécialités Maison", "Produits spéciaux et saisonniers"),
+        ]
+        
+        for nom, description in categories_defaut:
+            Categorie.objects.get_or_create(
+                nom=nom,
+                defaults={'description': description}
+            )
+        
+        categories = Categorie.objects.filter(
+            nom__in=["Viennoiseries", "Pains", "Pâtisseries", "Spécialités Maison"]
+        )
+    
+    return render(request, 'bakeryapp/categories.html', {
+        'categories': categories,
+        'total_produits': sum(c.produit_set.count() for c in categories)
+    })

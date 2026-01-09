@@ -1,0 +1,13 @@
+<style>
+.category-card {
+    border: 2px solid #FFE4E1;
+    border-radius: 15px;
+    transition: all 0.3s;
+    height: 100%;
+}
+.category-card:hover {
+    transform: translateY(-5px);
+    border-color: #8B0000;
+    box-shadow: 0 10px 20px rgba(139, 0, 0, 0.1);
+}
+</style>

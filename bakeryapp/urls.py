@@ -41,6 +41,7 @@ urlpatterns = [
     # Produits par catégorie et détail
     path('categorie/<int:categorie_id>/', views.produits_par_categorie, name='produits_categorie'),
     path('produit/<int:produit_id>/', views.produit_detail, name='produit_detail'),
+    path('backoffice/categories/', views.gestion_categories, name='gestion_categories'),
 ]
 
 
@@ -60,6 +61,8 @@ urlpatterns += [
     path("backoffice/orders/", views.backoffice_orders_list, name="backoffice_orders_list"),
     path("backoffice/orders/<int:pk>/", views.backoffice_order_detail, name="backoffice_order_detail"),
     path("backoffice/orders/<int:pk>/assign/", views.backoffice_assign_livreur, name="backoffice_assign_livreur"),
+    path('commande/<int:commande_id>/facture/', views.generer_facture_pdf, name='generer_facture_pdf'),
+    path('categories/', views.gestion_categories_simple, name='categories'),
 
     # Livreur
     path("delivery/orders/", views.delivery_my_orders, name="delivery_my_orders"),

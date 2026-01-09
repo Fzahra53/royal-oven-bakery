@@ -1,0 +1,95 @@
+{% extends 'backoffice/base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between mb-4">
+        <h2>Gestion des Catégories</h2>
+        <a href="{% url 'backoffice_products_list' %}" class="btn btn-secondary">
+            ← Retour produits
+        </a>
+    </div>
+
+    <!-- Formulaire ajout -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Ajouter une catégorie</h5>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="ajouter">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label>Nom de la catégorie *</label>
+                        <input type="text" name="nom" class="form-control" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label>Description</label>
+                        <input type="text" name="description" class="form-control">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Ajouter
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Liste catégories -->
+    <div class="card">
+        <div class="card-header">
+            <h5>Catégories existantes ({{ categories.count }})</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nom</th>
+                            <th>Description</th>
+                            <th>Produits</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for categorie in categories %}
+                        <tr>
+                            <td>{{ categorie.id }}</td>
+                            <td><strong>{{ categorie.nom }}</strong></td>
+                            <td>{{ categorie.description|default:"-" }}</td>
+                            <td>
+                                <span class="badge bg-info">
+                                    {{ categorie.produit_set.count }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if categorie.produit_set.count == 0 %}
+                                <form method="post" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="supprimer">
+                                    <input type="hidden" name="categorie_id" value="{{ categorie.id }}">
+                                    <button type="submit" class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Supprimer cette catégorie ?')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                                {% else %}
+                                <span class="text-muted">(Produits associés)</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">
+                                <em>Aucune catégorie</em>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
