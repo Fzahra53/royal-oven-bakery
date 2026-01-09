@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from django.db.models import UniqueConstraint
 from django.db.models.functions import Lower
 from django.utils import timezone
+from django.conf import settings
+
 
 
 class Categorie(models.Model):
@@ -93,6 +95,13 @@ class Livreur(models.Model):
     telephone = models.CharField(max_length=20)
     vehicule = models.CharField(max_length=50, blank=True)
     disponible = models.BooleanField(default=True)
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="livreur_profile",
+    )
 
     class Meta:
         verbose_name = "Livreur"
@@ -175,7 +184,6 @@ class Livraison(models.Model):
     date_livraison = models.DateTimeField(null=True, blank=True)
     statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default="EN_PREPARATION")
 
-    # si tu veux une adresse spécifique livraison différente de commande
     adresse_livraison = models.TextField(blank=True)
     notes = models.TextField(blank=True)
 
@@ -183,8 +191,18 @@ class Livraison(models.Model):
         verbose_name = "Livraison"
         verbose_name_plural = "Livraisons"
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        # ✅ Synchroniser le statut de la commande avec le statut de la livraison
+        # (adapte uniquement si tes valeurs de Commande.statut sont différentes)
+        if hasattr(self.commande, "statut"):
+            self.commande.statut = self.statut
+            self.commande.save(update_fields=["statut"])
+
     def __str__(self):
         return f"Livraison #{self.id} - Cmd {self.commande_id}"
+
 
 
 class Facture(models.Model):

@@ -110,13 +110,11 @@
                             </a>
                             
                             {% if commande.statut == "EN_ATTENTE" %}
-                            <form method="POST" action="{% url 'annuler_commande' commande.id %}" 
-                                  onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette commande ?');">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-danger">
-                                    <i class="fas fa-times me-2"></i>Annuler la commande
-                                </button>
-                            </form>
+                           <form method="post" action="{% url 'annuler_commande' commande.id %}" class="d-inline">
+                             {% csrf_token %}
+                              <button type="submit" class="btn btn-danger">Annuler</button>
+                           </form>
+
                             {% endif %}
                         </div>
                     </div>

@@ -9,7 +9,7 @@ from django.utils import timezone
 from django.db import models
 from django.http import JsonResponse
 from datetime import timedelta
-
+from django.views.decorators.http import require_POST
 from .models import Commande, Livreur, Livraison, LigneCommande, Produit, Client, Categorie, Avis
 from .forms import ProduitForm
 
@@ -48,35 +48,46 @@ def connexion_view(request):
     if request.method == "POST":
         identifiant = request.POST.get("email", "").strip()
         password = request.POST.get("password", "")
-        
+
         User = get_user_model()
         user = None
-        
+
         # Essayer d'abord avec l'identifiant comme username
         user = authenticate(request, username=identifiant, password=password)
-        
+
         # Si échec et que c'est un email
         if user is None and "@" in identifiant:
             try:
                 user_with_email = User.objects.filter(email__iexact=identifiant).first()
                 if user_with_email:
                     user = authenticate(
-                        request, 
-                        username=user_with_email.username, 
+                        request,
+                        username=user_with_email.username,
                         password=password
                     )
             except Exception as e:
                 print(f"Erreur lors de la recherche par email: {e}")
-        
+
         if user is not None:
             login(request, user)
             messages.success(request, "Connexion réussie !")
+
+            # ✅ LIVREUR → espace livraison
+            if user.groups.filter(name="LIVREUR").exists():
+                return redirect("delivery_my_orders")
+
+            # ✅ ADMIN/STAFF → backoffice (uniquement au login)
+            if user.is_staff or user.is_superuser:
+                return redirect("backoffice_livreurs_list")
+
+            # ✅ CLIENT → mon compte
             return redirect("mon_compte")
-        else:
-            messages.error(request, "Identifiant ou mot de passe incorrect.")
-            return redirect("connexion")
-    
+
+        messages.error(request, "Identifiant ou mot de passe incorrect.")
+        return redirect("connexion")
+
     return render(request, "bakeryapp/connexion.html")
+
 
 def inscription_view(request):
     """Inscription utilisateur"""
@@ -135,59 +146,86 @@ def deconnexion_view(request):
 
 # ==================== COMPTE UTILISATEUR ====================
 
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from django.contrib import messages
+
 @login_required
 def mon_compte_view(request):
-    """Page mon compte"""
+    # ✅ If LIVREUR, send to delivery space
+    if request.user.groups.filter(name="LIVREUR").exists():
+        return redirect("delivery_my_orders")
+
+    
+
+    # ---- your normal client logic below ----
     client = getattr(request.user, "profil_client", None)
-    
-    # Nom à afficher
-    nom_a_afficher = ""
-    if client:
-        nom_a_afficher = client.nom
-    elif request.user.get_full_name():
-        nom_a_afficher = request.user.get_full_name()
-    else:
-        nom_a_afficher = request.user.username
-    
-    # Compter les commandes
-    commandes_count = 0
-    livraisons_count = 0
-    
-    if client:
-        commandes_count = Commande.objects.filter(client=client).count()
-        
-        # Livraisons cette semaine
-        semaine_passee = timezone.now() - timedelta(days=7)
-        livraisons_count = Commande.objects.filter(
-            client=client,
-            date_commande__gte=semaine_passee,
-            statut="LIVREE"
-        ).count()
-    
+
     context = {
         "client": client,
-        "nom_affichage": nom_a_afficher,
-        "panier_count": len(request.session.get("panier", {})),
-        "commandes_count": commandes_count,
-        "livraisons_count": livraisons_count,
+        "commandes_count": 0,
+        "livraisons_count": 0,
+        # add other context keys you already use
     }
+
     return render(request, "bakeryapp/mon_compte.html", context)
+
+       
 
 @login_required
 def mes_commandes_view(request):
     """Historique des commandes"""
+    # 1) Récupérer le client sans crash si le profil n'existe pas
     client = getattr(request.user, "profil_client", None)
-    commandes = []
-    
-    if client:
-        commandes = Commande.objects.filter(client=client).order_by('-date_commande')[:10]
-    
+
+    # 2) Toujours utiliser un QuerySet (pas une liste) pour éviter les soucis avec .count()
+    commandes = Commande.objects.none()
+
+    if client is not None:
+        qs = Commande.objects.filter(client=client)
+
+        # 3) Trier avec un champ qui existe vraiment
+        # Essaie d'abord date_commande, sinon fallback sur created_at, sinon id
+        if hasattr(Commande, "date_commande"):
+            qs = qs.order_by("-date_commande")
+        elif hasattr(Commande, "created_at"):
+            qs = qs.order_by("-created_at")
+        else:
+            qs = qs.order_by("-id")
+
+        commandes = qs[:10]
+
     context = {
-        'client': client,
-        'commandes': commandes,
-        'commandes_count': commandes.count() if client else 0,
+        "client": client,
+        "commandes": commandes,
+        "commandes_count": commandes.count() if client is not None else 0,
     }
-    return render(request, 'bakeryapp/mes_commandes.html', context)
+    return render(request, "bakeryapp/mes_commandes.html", context)
+
+
+@require_POST
+@login_required
+def annuler_commande_view(request, commande_id):
+    commande = get_object_or_404(Commande, id=commande_id)
+
+    # 🔒 Sécurité: vérifier que la commande appartient au client connecté (adapte selon ton modèle)
+    client = getattr(request.user, "profil_client", None)
+    if client and hasattr(commande, "client") and commande.client != client:
+        messages.error(request, "Accès refusé.")
+        return redirect("mes_commandes")
+
+    # ✅ Règle métier: annuler seulement si pas livrée
+    if hasattr(commande, "statut") and commande.statut in ["LIVREE"]:
+        messages.warning(request, "Impossible d’annuler une commande livrée.")
+        return redirect("detail_commande", pk=commande.id)
+
+
+    if hasattr(commande, "statut"):
+        commande.statut = "ANNULEE"
+        commande.save(update_fields=["statut"])
+        messages.success(request, "Commande annulée.")
+    return redirect("detail_commande", pk=commande.id)
+
 
 @login_required
 def detail_commande_view(request, pk):
@@ -755,15 +793,18 @@ def backoffice_livreur_create(request):
 @login_required
 def delivery_my_orders(request):
     """Commandes du livreur"""
-    livreur = Livreur.objects.filter(nom=request.user.username).first()
+    livreur = getattr(request.user, "livreur_profile", None)
 
     if not livreur:
         messages.error(request, "Aucun profil livreur associé à ce compte.")
-        return redirect("accueil")
+        return redirect("accueil")  # ou une page safe
 
     livraisons = Livraison.objects.filter(livreur=livreur).order_by("-id")
-    return render(request, "delivery/my_orders.html", {"livraisons": livraisons, "livreur": livreur})
-
+    return render(
+        request,
+        "delivery/my_orders.html",
+        {"livraisons": livraisons, "livreur": livreur},
+    )
 @login_required
 def delivery_update_status(request, pk):
     """Mettre à jour statut livraison"""

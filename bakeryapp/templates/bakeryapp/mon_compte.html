@@ -26,18 +26,18 @@
                         <a href="{% url 'mon_compte' %}" class="list-group-item list-group-item-action active">
                             <i class="fas fa-tachometer-alt me-2"></i>Tableau de bord
                         </a>
-                        <a href="#" class="list-group-item list-group-item-action">
-                            <i class="fas fa-shopping-bag me-2"></i>Mes commandes
-                        </a>
+                       <a href="{% url 'mes_commandes' %}" class="list-group-item list-group-item-action">
+    <i class="fas fa-shopping-bag me-2"></i>Mes commandes
+</a>
+
+                        
                         <a href="{% url 'mon_panier' %}" class="list-group-item list-group-item-action">
                             <i class="fas fa-shopping-cart me-2"></i>Mon panier
                             {% if panier_count > 0 %}
                                 <span class="badge bg-primary float-end">{{ panier_count }}</span>
                             {% endif %}
                         </a>
-                        <a href="#" class="list-group-item list-group-item-action">
-                            <i class="fas fa-map-marker-alt me-2"></i>Mes adresses
-                        </a>
+                       
                         <a href="{% url 'modifier_profil' %}" class="list-group-item list-group-item-action">
                             <i class="fas fa-user-cog me-2"></i>Mon profil
                         </a>

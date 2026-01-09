@@ -24,6 +24,8 @@ urlpatterns = [
 
     # Profil et commandes client
     path('mes-commandes/', views.mes_commandes_view, name='mes_commandes'),
+    path("commande/<int:commande_id>/annuler/", views.annuler_commande_view, name="annuler_commande"),
+
     path('commande/<int:pk>/', views.detail_commande_view, name='detail_commande'),
     path('mon-compte/modifier/', views.modifier_profil_view, name='modifier_profil'),
 

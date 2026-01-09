@@ -1,0 +1,7 @@
+[33mc2ff520[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m 🧹 Suppression fichiers accidentels
+[33m004e824[m ✨ Amélioration interface
+[33m813f3e7[m Fix: Correction des vues et amélioration mon_compte
+[33m9a0fc4e[m Correction erreur connexion + ALLOWED_HOSTS
+[33m8e4b537[m[33m ([m[1;31morigin/feature-backoffice[m[33m, [m[1;32mfeature-backoffice[m[33m)[m feat(backoffice): products CRUD, orders workflow, delivery assignment
+[33m7c8a121[m Remove duplicate settings module
+[33mdbd4de0[m Initial bakery project
