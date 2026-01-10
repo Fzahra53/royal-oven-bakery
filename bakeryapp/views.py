@@ -78,7 +78,7 @@ def connexion_view(request):
 
             # ✅ ADMIN/STAFF → backoffice (uniquement au login)
             if user.is_staff or user.is_superuser:
-                return redirect("backoffice_livreurs_list")
+                 return redirect("mon_compte")
 
             # ✅ CLIENT → mon compte
             return redirect("mon_compte")
@@ -519,16 +519,17 @@ def panier_vider(request):
 # ==================== PRODUITS & RECHERCHE ====================
 
 def produits_par_categorie(request, categorie_id):
-    """Produits par catégorie"""
     categorie = get_object_or_404(Categorie, id=categorie_id)
     produits = Produit.objects.filter(categorie=categorie, actif=True)
-    
+
     context = {
-        'categorie': categorie,
-        'produits': produits,
-        'categories': Categorie.objects.all(),
+        "categorie": categorie,
+        "produits": produits,
+        "categories": Categorie.objects.all(),
+        "categorie_active": categorie.id,   # pour activer le bouton
     }
-    return render(request, 'bakeryapp/produits_categorie.html', context)
+    return render(request, "bakeryapp/produits.html", context)
+
 
 def produit_detail(request, produit_id):
     """Détail d'un produit"""

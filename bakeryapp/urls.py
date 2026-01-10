@@ -64,7 +64,8 @@ urlpatterns += [
     path("backoffice/orders/<int:pk>/", views.backoffice_order_detail, name="backoffice_order_detail"),
     path("backoffice/orders/<int:pk>/assign/", views.backoffice_assign_livreur, name="backoffice_assign_livreur"),
     path('commande/<int:commande_id>/facture/', views.generer_facture_pdf, name='generer_facture_pdf'),
-    path('categories/', views.gestion_categories_simple, name='categories'),
+   path("produits/categorie/<int:categorie_id>/",views.produits_par_categorie,name="produits_categorie"),
+
 
     # Livreur
     path("delivery/orders/", views.delivery_my_orders, name="delivery_my_orders"),

@@ -11,22 +11,26 @@
     </div>
 
     <!-- Filtres par catégorie -->
-    <div class="row mb-5">
-        <div class="col-12">
-            <div class="d-flex flex-wrap gap-2 justify-content-center">
-                <a href="{% url 'produits' %}" 
-                   class="btn {% if not request.GET.categorie %}btn-primary{% else %}btn-outline-primary{% endif %}">
-                    Tous les produits
-                </a>
-                {% for categorie in categories %}
-                <a href="{% url 'produits_categorie' categorie.id %}" 
-                   class="btn {% if request.GET.categorie == categorie.id|stringformat:'i' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="d-flex flex-wrap gap-2 justify-content-center">
+
+            <a href="{% url 'produits' %}"
+               class="btn {% if not categorie_active|default:None %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                Tous les produits
+            </a>
+
+            {% for categorie in categories %}
+                <a href="{% url 'produits_categorie' categorie.id %}"
+                   class="btn {% if categorie_active == categorie.id %}btn-primary{% else %}btn-outline-primary{% endif %}">
                     {{ categorie.nom }}
                 </a>
-                {% endfor %}
-            </div>
+            {% endfor %}
+
         </div>
     </div>
+</div>
+
 
     <!-- Grille des produits -->
     {% if produits %}
@@ -203,39 +207,6 @@
         color: #8B0000 !important;
     }
 </style>
-<!-- Section catégories -->
-<div class="row mb-5">
-    <div class="col-12">
-        <h3 class="text-center mb-4">Nos Catégories</h3>
-        <div class="row g-3">
-            {% for categorie in categories %}
-            <div class="col-md-3 col-6">
-                <a href="{% url 'produits_categorie' categorie.id %}" 
-                   class="card category-card text-decoration-none">
-                    <div class="card-body text-center">
-                        <div class="mb-3">
-                            {% if categorie.nom == "Viennoiseries" %}
-                            <i class="fas fa-croissant fa-3x text-bordeaux"></i>
-                            {% elif categorie.nom == "Pains" %}
-                            <i class="fas fa-bread-slice fa-3x text-bordeaux"></i>
-                            {% elif categorie.nom == "Pâtisseries" %}
-                            <i class="fas fa-birthday-cake fa-3x text-bordeaux"></i>
-                            {% else %}
-                            <i class="fas fa-star fa-3x text-bordeaux"></i>
-                            {% endif %}
-                        </div>
-                        <h5 class="card-title">{{ categorie.nom }}</h5>
-                        <p class="card-text small text-muted">
-                            {{ categorie.description|truncatechars:60 }}
-                        </p>
-                        <span class="badge bg-rose text-bordeaux">
-                            {{ categorie.produit_set.count }} produits
-                        </span>
-                    </div>
-                </a>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</div>
+
+
 {% endblock %}
